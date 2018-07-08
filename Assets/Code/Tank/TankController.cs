@@ -5,9 +5,13 @@ using System.Collections.Generic;
 
 public class TankController : MonoBehaviour {
 
+
+
+    public string Name;
     private GameObject root;
     private GameObject turret;
     private GameObject barrel;
+    private GameObject firingPoint;
     private float forwardSpeed = 0.05f;
     private float rotateSpeed = 0.01f;
     private float barrelRotateSpeed = 0.04f;
@@ -19,19 +23,43 @@ public class TankController : MonoBehaviour {
     private int currentHealth = 10;
     private Dictionary<GameObject, DateTime> projectiles;
 
+    private bool toggleForward;
+    private bool toggleReverse;
+    private bool toggleLeft;
+    private bool toggleRight;
+    private bool toggleTurretRight;
+    private bool toggleTurretLeft;
+
 	// Use this for initialization
 	public virtual void Start ()
     {
         root = this.gameObject;
         turret = root.transform.Find("top").gameObject;
         barrel = turret.transform.Find("barrel").gameObject;
+        firingPoint = barrel.transform.Find("firingpoint").gameObject;
         projectiles = new Dictionary<GameObject,DateTime>();
+      
 	}
 	
 	// Update is called once per frame
 	public virtual void Update ()
     {
         ManageProjectiles();
+
+        if (toggleForward)
+            Forward();
+        if (toggleReverse)
+            Reverse();
+        if (toggleLeft)
+            TurnLeft();
+        if (toggleRight)
+            TurnRight();
+        if (toggleTurretLeft)
+            TurretLeft();
+        if (toggleTurretRight)
+            TurretRight();
+
+
 	}
 
     private void ManageProjectiles()
@@ -74,7 +102,7 @@ public class TankController : MonoBehaviour {
         if (go.tag == "projectile")
         {
             //it's one of ours colliding on the way out of the barrel. Ignore.
-            if (projectiles.ContainsKey(go))
+            if (projectiles != null && projectiles.ContainsKey(go))
                 return;
 
             CalculateDamage(go);
@@ -90,21 +118,61 @@ public class TankController : MonoBehaviour {
         currentHealth--;
     }
 
-    #region MSTank API
 
-    
+    public void ToggleForward()
+    {
+        toggleForward = true;
+        toggleReverse = false;
+    }
+    public void ToggleReverse()
+    {
+        toggleForward = false;
+        toggleReverse = true;
+    }
+    public void ToggleLeft()
+    {
+        toggleLeft = true;
+        toggleRight = false;
+    }
+    public void ToggleRight()
+    {
+        toggleLeft = false;
+        toggleRight = true;
+    }
+    public void ToggleTurretRight()
+    {
+        toggleTurretLeft = false;
+        toggleTurretRight = true;
+    }
+    public void ToggleTurretLeft()
+    {
+        toggleTurretLeft = true;
+        toggleTurretRight = false;
+    }
 
-    protected int GetCurrentHealth()
+    public void Stop()
+    {
+        toggleForward = false;
+        toggleReverse = false;
+        toggleLeft = false;
+        toggleRight = false;
+    }
+    public void StopTurret()
+    {
+        toggleTurretLeft = false;
+        toggleTurretRight = false;
+    }
+
+    public int GetCurrentHealth()
     {
         return currentHealth;
     }
-
-    protected int GetCurrentAmmo()
+    public int GetCurrentAmmo()
     {
         return ammoCount;
     }
 
-    protected void Forward()
+    public void Forward()
     {
         if (root == null)
         {
@@ -115,33 +183,28 @@ public class TankController : MonoBehaviour {
             Console.WriteLine("Root ref fixed");
         root.transform.position += root.transform.forward * forwardSpeed;
     }
-
-    protected void Reverse()
+    public void Reverse()
     {
         root.transform.position -= root.transform.forward * forwardSpeed;
     }
-
-    protected void TurnRight()
+    public void TurnRight()
     {
         root.transform.RotateAround(Vector3.up, rotateSpeed);
     }
-
-    protected void TurnLeft()
+    public void TurnLeft()
     {
         root.transform.RotateAround(Vector3.up, -rotateSpeed);
     }
-
-    protected void TurretLeft()
+    public void TurretLeft()
     {
         turret.transform.RotateAround(Vector3.up, -barrelRotateSpeed);
     }
-
-    protected void TurretRight()
+    public void TurretRight()
     {
         turret.transform.RotateAround(Vector3.up, barrelRotateSpeed);
     }
 
-    protected void Fire()
+    public void Fire()
     {
         TimeSpan timeSinceLastFired = DateTime.Now - lastFireTime;
         if (timeSinceLastFired.TotalSeconds < fireInterval)
@@ -154,14 +217,14 @@ public class TankController : MonoBehaviour {
         GameObject projectile = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         projectile.tag = "projectile";
         projectile.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-        projectile.transform.position = barrel.transform.position + barrel.transform.up;
+        projectile.transform.position = firingPoint.transform.position;
         projectile.AddComponent<Rigidbody>();
         projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
         ammoCount--;
         projectiles.Add(projectile,lastFireTime);
         
     }
-    #endregion
+    
 }
 
 

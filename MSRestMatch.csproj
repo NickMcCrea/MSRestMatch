@@ -12,12 +12,15 @@
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>WebGL:20</UnityBuildTarget>
     <UnityVersion>2017.3.1f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -322,6 +325,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Code\Camera\FlyCamera.cs" />
+    <Compile Include="Assets\Code\GameCommand.cs" />
     <Compile Include="Assets\Code\GameRestServer.cs" />
     <Compile Include="Assets\Code\GameSimulation.cs" />
     <Compile Include="Assets\Code\MainMenu.cs" />
@@ -330,6 +334,7 @@
     <Compile Include="Assets\Code\Tank\DummyTank.cs" />
     <Compile Include="Assets\Code\Tank\ManualTankController.cs" />
     <Compile Include="Assets\Code\Tank\TankController.cs" />
+    <Compile Include="Assets\Code\Tank\TankFactory.cs" />
     <Compile Include="Assets\Code\TrainingRoomMain.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />

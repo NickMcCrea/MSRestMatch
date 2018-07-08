@@ -31,6 +31,9 @@ public class TrainingRoomMain : MonoBehaviour
     void Update()
     {
 
+
+        simulation.Update();
+
     }
 
     
