@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class TankFactory : MonoBehaviour
 {
-
+    int spawnPoint = 1;
   
     // Use this for initialization
     public TankFactory()
@@ -22,12 +22,17 @@ public class TankFactory : MonoBehaviour
 
     }
 
-    public GameObject CreateTank(string mainColor, string name)
+    public GameObject CreateTank(string mainColor, string name, string token)
     {
         var tank = CreateTank<TankController>(mainColor);
-        PlaceTankAtSpawnPoint(tank, "SpawnPoint 1");
+        PlaceTankAtSpawnPoint(tank, "SpawnPoint " + spawnPoint.ToString());
         tank.GetComponent<TankController>().Name = name;
-        
+        tank.GetComponent<TankController>().Token = token;
+
+        spawnPoint++;
+        if (spawnPoint > 2)
+            spawnPoint = 1;
+
 
         return tank;
     }

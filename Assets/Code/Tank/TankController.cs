@@ -5,8 +5,12 @@ using System.Collections.Generic;
 
 public class TankController : MonoBehaviour {
 
-
-
+    public volatile int Health = 10;
+    public volatile int Ammo = 10;
+    public volatile float X;
+    public volatile float Y;
+    public volatile float Heading;
+    public string Token;
     public string Name;
     private GameObject root;
     private GameObject turret;
@@ -18,9 +22,8 @@ public class TankController : MonoBehaviour {
     private DateTime lastFireTime = DateTime.Now;
     private float fireInterval = 2;
     private float projectileForce = 2000;
-    private int ammoCount = 10;
     private int projectileLifetime = 4;
-    private int currentHealth = 10;
+   
     private Dictionary<GameObject, DateTime> projectiles;
 
     private bool toggleForward;
@@ -60,6 +63,9 @@ public class TankController : MonoBehaviour {
             TurretRight();
 
 
+        X = transform.position.x;
+        Y = transform.position.y;
+        Heading = 0;
 	}
 
     private void ManageProjectiles()
@@ -115,7 +121,7 @@ public class TankController : MonoBehaviour {
     private void CalculateDamage(GameObject go)
     {
         //for now, all hits subtract one health
-        currentHealth--;
+        Health--;
     }
 
 
@@ -163,14 +169,7 @@ public class TankController : MonoBehaviour {
         toggleTurretRight = false;
     }
 
-    public int GetCurrentHealth()
-    {
-        return currentHealth;
-    }
-    public int GetCurrentAmmo()
-    {
-        return ammoCount;
-    }
+   
 
     public void Forward()
     {
@@ -210,7 +209,7 @@ public class TankController : MonoBehaviour {
         if (timeSinceLastFired.TotalSeconds < fireInterval)
             return;
 
-        if (ammoCount < 1)
+        if (Ammo < 1)
             return;
         
         lastFireTime = DateTime.Now;
@@ -220,7 +219,7 @@ public class TankController : MonoBehaviour {
         projectile.transform.position = firingPoint.transform.position;
         projectile.AddComponent<Rigidbody>();
         projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
-        ammoCount--;
+        Ammo--;
         projectiles.Add(projectile,lastFireTime);
         
     }
