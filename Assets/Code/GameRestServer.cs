@@ -16,6 +16,10 @@ public interface IService
     [OperationContract, WebInvoke(UriTemplate = "/tank/create/", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
     void CreatePlayer(PlayerCreate create);
 
+    [OperationContract, WebInvoke(UriTemplate = "/tank/createtest/", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+    void CreateTestPlayer(PlayerCreateTest create);
+
+
     [OperationContract, WebInvoke(UriTemplate = "/tank/{token}/forward/", ResponseFormat = WebMessageFormat.Json)]
     void Forward(string token);
 
@@ -45,7 +49,10 @@ public interface IService
 
 
     [OperationContract, WebGet(UriTemplate = "/tank/{token}/state/", ResponseFormat = WebMessageFormat.Json)]
-    TankJson GetTankState(string token);
+    GameObjectState GetTankState(string token);
+
+    [OperationContract, WebGet(UriTemplate = "/tank/{token}/fieldofview/", ResponseFormat = WebMessageFormat.Json)]
+    List<GameObjectState> GetFieldOfView(string token);
 
 
 
@@ -72,6 +79,17 @@ class Service : IService
         lock (simulation.enqueuedCommands)
         {
             simulation.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.PlayerCreate, Payload = create });
+        }
+
+    }
+
+    public void CreateTestPlayer(PlayerCreateTest create)
+    {
+        Debug.Log("Player test create request: " + create.Name);
+
+        lock (simulation.enqueuedCommands)
+        {
+            simulation.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.PlayerCreateTest, Payload = create });
         }
 
     }
@@ -140,27 +158,32 @@ class Service : IService
     }
     public void Fire(string token)
     {
+        Debug.Log("Player fire request: " + token);
+
         lock (simulation.enqueuedCommands)
         {
             simulation.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Fire, Token = token, Payload = null });
         }
     }
 
-    public TankJson GetTankState(string token)
+    public GameObjectState GetTankState(string token)
     {
         lock (simulation.tankControllers)
         {
             foreach (TankController t in simulation.tankControllers)
             {
                 if (t.Token == token)
-                    return new TankJson() { Name = t.Name, Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading };
+                    return new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, ForwardX = t.ForwardX, ForwardY = t.ForwardY };
             }
             
         }
         return null;
     }
 
-
+    public List<GameObjectState> GetFieldOfView(string token)
+    {
+        return simulation.GetObjectsInViewOfTank(token);
+    }
 }
 
 
@@ -171,12 +194,13 @@ public class PlayerCreate
     public string Color { get; set; }
 }
 
-public class TankJson
+public class PlayerCreateTest
 {
     public string Name { get; set; }
-    public float X { get; set; }
-    public float Y { get; set; }
-    public float Heading { get; set; }
-    public int Health { get; set; }
-    public int Ammo { get; set; }
+    public string Token { get; set; }
+    public string Color { get; set; }
+    public string X { get; set; }
+    public string Y { get; set; }
+    public string Angle { get; set; }
 }
+

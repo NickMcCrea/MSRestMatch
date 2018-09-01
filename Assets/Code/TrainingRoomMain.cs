@@ -25,6 +25,19 @@ public class TrainingRoomMain : MonoBehaviour
         var ep = host.AddServiceEndpoint(typeof(IService), new WebHttpBinding(), "");
         host.Open();
 
+
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank1", new Vector3(0, 5, 0), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank2", new Vector3(30, 5, -30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank3", new Vector3(30, 5, 0), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank4", new Vector3(0, 5, -30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank5", new Vector3(30, 5, 30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank6", new Vector3(-30, 5, -30), false, true);
+
+    }
+
+    private static string GenerateRandomHexColorString()
+    {
+        return "#" + ColorUtility.ToHtmlStringRGB(UnityEngine.Random.ColorHSV());
     }
 
     // Update is called once per frame

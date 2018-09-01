@@ -6,26 +6,22 @@ using UnityEngine;
 public class TankFactory : MonoBehaviour
 {
     int spawnPoint = 1;
-  
+
     // Use this for initialization
     public TankFactory()
     {
 
-        //tank1 = CreateTank<ManualTankController>("#EA9414");
-        //SetTankEmissive(tank1, Color.red, 10);
-        //PlaceTankAtSpawnPoint(tank1, "SpawnPoint 1");
-
-        //tank2 = CreateTank<DummyTank>("#14EA94");
-        //PlaceTankAtSpawnPoint(tank2, "SpawnPoint 2");
-     
-
 
     }
 
-    public GameObject CreateTank(string mainColor, string name, string token)
+    public GameObject CreateTank(string mainColor, string name, string token, Vector3 startingPosition)
     {
         var tank = CreateTank<TankController>(mainColor);
-        PlaceTankAtSpawnPoint(tank, "SpawnPoint " + spawnPoint.ToString());
+
+        // PlaceTankAtSpawnPoint(tank, "SpawnPoint " + spawnPoint.ToString());
+
+        PlaceTank(tank, startingPosition);
+
         tank.GetComponent<TankController>().Name = name;
         tank.GetComponent<TankController>().Token = token;
 
@@ -37,10 +33,30 @@ public class TankFactory : MonoBehaviour
         return tank;
     }
 
-    private void PlaceTankAtSpawnPoint(GameObject tank, string spawnPointName)
+    public GameObject CreateAITank(string mainColor, string name, Vector3 startingPosition)
     {
-        var spawnPoint = GameObject.Find(spawnPointName);
+        var tank = CreateTank<AITankController>(mainColor);
+
+        
+        PlaceTank(tank, startingPosition);
+
+        tank.GetComponent<AITankController>().Name = name;
+        tank.GetComponent<AITankController>().Token = "secretAITankControllerToken";
+
+
+        return tank;
+    }
+
+
+    private void PlaceTankAtSpawnPoint(UnityEngine.GameObject tank, string spawnPointName)
+    {
+        var spawnPoint = UnityEngine.GameObject.Find(spawnPointName);
         tank.transform.position = SetTankOnFloor(spawnPoint.transform.position);
+    }
+
+    private void PlaceTank(UnityEngine.GameObject tank, Vector3 pos)
+    {
+        tank.transform.position = SetTankOnFloor(pos);
     }
 
     private Vector3 SetTankOnFloor(Vector3 position)
@@ -52,21 +68,23 @@ public class TankFactory : MonoBehaviour
 
     private GameObject CreateTank<T>(string tankColor)
     {
-        var tank = Instantiate(Resources.Load("Prefabs/ToyTank")) as GameObject;
+        var tank = Instantiate(Resources.Load("Prefabs/ToyTank")) as UnityEngine.GameObject;
         tank.AddComponent(typeof(T));
         SetTankColor(tank, tankColor);
         return tank;
     }
 
-    private void SetTankColor(GameObject tankRootObject, string hexColorString)
+    private void SetTankColor(UnityEngine.GameObject tankRootObject, string hexColorString)
     {
         Color color;
         ColorUtility.TryParseHtmlString(hexColorString, out color);
         SetTankColor(tankRootObject, color);
     }
 
-    private void SetTankColor(GameObject tankRootObject, Color color)
+    private void SetTankColor(UnityEngine.GameObject tankRootObject, Color color)
     {
+        tankRootObject.GetComponent<TankController>().mainTankColor = color;
+
         var renderers = tankRootObject.GetComponentsInChildren<MeshRenderer>();
 
         foreach (MeshRenderer mr in renderers)
@@ -77,7 +95,7 @@ public class TankFactory : MonoBehaviour
     }
 
 
-    private void SetTankEmissive(GameObject tankRootObject, Color color, float level)
+    private void SetTankEmissive(UnityEngine.GameObject tankRootObject, Color color, float level)
     {
         var renderers = tankRootObject.GetComponentsInChildren<MeshRenderer>();
 

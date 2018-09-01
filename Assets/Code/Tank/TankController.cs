@@ -3,28 +3,49 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-public class TankController : MonoBehaviour {
+public class TankController : MonoBehaviour
+{
 
+    public enum TankState
+    {
+        normal,
+        destroyed
+    }
+
+    public Color mainTankColor;
+    public TankState currentState = TankState.normal;
     public volatile int Health = 10;
     public volatile int Ammo = 10;
     public volatile float X;
     public volatile float Y;
     public volatile float Heading;
+    public volatile float ForwardX;
+    public volatile float ForwardY;
     public string Token;
     public string Name;
-    private GameObject root;
-    private GameObject turret;
-    private GameObject barrel;
-    private GameObject firingPoint;
-    private float forwardSpeed = 0.05f;
-    private float rotateSpeed = 0.01f;
-    private float barrelRotateSpeed = 0.04f;
+    public int Kills;
+    public UnityEngine.GameObject root;
+    public UnityEngine.GameObject turret;
+    public UnityEngine.GameObject barrel;
+    public UnityEngine.GameObject firingPoint;
+    private float forwardSpeed = 5f;
+    private float rotateSpeed = 20f;
+    private float barrelRotateSpeed = 2f;
+    private float reorientateSpeed = 10f;
     private DateTime lastFireTime = DateTime.Now;
     private float fireInterval = 2;
+
     private float projectileForce = 2000;
+    private float tankMovementForce = 15f;
+    private float torqueForce = 35f;
+
     private int projectileLifetime = 4;
-   
-    private Dictionary<GameObject, DateTime> projectiles;
+    private DateTime destroyTime;
+    private readonly int startingHealth = 10;
+    private readonly int startingAmmo = 10;
+    private float projectileSize = 0.4f;
+
+    private Dictionary<UnityEngine.GameObject, DateTime> projectiles;
 
     private bool toggleForward;
     private bool toggleReverse;
@@ -32,41 +53,79 @@ public class TankController : MonoBehaviour {
     private bool toggleRight;
     private bool toggleTurretRight;
     private bool toggleTurretLeft;
+    private ParticleSystem smokeParticleSystem;
+    public GameSimRules Ruleset { get; internal set; }
+    public GameSimulation Sim { get; internal set; }
+    public int Deaths { get; internal set; }
 
-	// Use this for initialization
-	public virtual void Start ()
+    // Use this for initialization
+    public virtual void Start()
     {
         root = this.gameObject;
         turret = root.transform.Find("top").gameObject;
         barrel = turret.transform.Find("barrel").gameObject;
         firingPoint = barrel.transform.Find("firingpoint").gameObject;
-        projectiles = new Dictionary<GameObject,DateTime>();
-      
-	}
-	
-	// Update is called once per frame
-	public virtual void Update ()
+        projectiles = new Dictionary<UnityEngine.GameObject, DateTime>();
+        Health = startingHealth;
+        Ammo = startingAmmo;
+        smokeParticleSystem = root.transform.Find("main").gameObject.GetComponent<ParticleSystem>();
+        var em = smokeParticleSystem.emission;
+        em.enabled = false;
+    }
+
+    // Update is called once per frame
+    public virtual void Update()
     {
         ManageProjectiles();
 
-        if (toggleForward)
-            Forward();
-        if (toggleReverse)
-            Reverse();
-        if (toggleLeft)
-            TurnLeft();
-        if (toggleRight)
-            TurnRight();
-        if (toggleTurretLeft)
-            TurretLeft();
-        if (toggleTurretRight)
-            TurretRight();
+        if (currentState == TankState.normal)
+        {
+            if (toggleForward)
+                Forward();
+            if (toggleReverse)
+                Reverse();
+            if (toggleLeft)
+                TurnLeft();
+            if (toggleRight)
+                TurnRight();
+            if (toggleTurretLeft)
+                TurretLeft();
+            if (toggleTurretRight)
+                TurretRight();
+        }
+        else if (currentState == TankState.destroyed)
+        {
+            TimeSpan sinceDestruction = DateTime.Now - destroyTime;
+            if (sinceDestruction.TotalSeconds > Ruleset.RespawnTime)
+            {
+                Sim.RespawnTank(this);
+            }
+        }
+
+
 
 
         X = transform.position.x;
         Y = transform.position.y;
-        Heading = 0;
-	}
+
+        //A = atan2(V.y, V.x)
+        Heading = (float)Math.Atan2(transform.forward.z, transform.forward.x);
+        Heading = Heading * Mathf.Rad2Deg;
+        Heading = (Heading + 360) % 360;
+
+        ForwardX = transform.forward.x;
+        ForwardY = transform.forward.z;
+
+        Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, q, Time.deltaTime * reorientateSpeed);
+
+
+        if(transform.position.y < -10)
+        {
+            DestroyTank();
+        }
+
+    }
 
     private void ManageProjectiles()
     {
@@ -81,8 +140,8 @@ public class TankController : MonoBehaviour {
         if (projectiles.Count == 0)
             return;
 
-        GameObject destroyThis = null;
-        foreach(GameObject p in projectiles.Keys)
+        UnityEngine.GameObject destroyThis = null;
+        foreach (UnityEngine.GameObject p in projectiles.Keys)
         {
             TimeSpan timeSinceSpawn = DateTime.Now - projectiles[p];
             if (timeSinceSpawn.TotalSeconds > projectileLifetime)
@@ -95,9 +154,37 @@ public class TankController : MonoBehaviour {
         if (destroyThis != null)
         {
             projectiles.Remove(destroyThis);
-            GameObject.Destroy(destroyThis);
-            
+            UnityEngine.GameObject.Destroy(destroyThis);
+
         }
+    }
+
+    internal void ReActivate()
+    {
+        currentState = TankState.normal;
+        ReplenishHealthAndAmmo();
+        Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
+        transform.rotation = q;
+        Debug.Log(Name + " Respawned ");
+
+        var em = smokeParticleSystem.emission;
+        em.enabled = false;
+    }
+
+    public void ReplenishHealthAndAmmo()
+    {
+        ReplenishAmmo();
+        ReplenishHealth();
+    }
+
+    public void ReplenishHealth()
+    {
+        Health = startingHealth;
+    }
+
+    public void ReplenishAmmo()
+    {
+        Ammo = startingAmmo;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -105,25 +192,55 @@ public class TankController : MonoBehaviour {
         Console.WriteLine("Tank collision detected: " + collision.gameObject.name);
 
         var go = collision.collider.gameObject;
-        if (go.tag == "projectile")
+        if (go.tag.Contains("projectile"))
         {
             //it's one of ours colliding on the way out of the barrel. Ignore.
             if (projectiles != null && projectiles.ContainsKey(go))
                 return;
 
             CalculateDamage(go);
-            GameObject.Destroy(go);
+            UnityEngine.GameObject.Destroy(go);
+
+
+            var bulletExplosivo = Instantiate(Resources.Load("Prefabs/ShellExplosion")) as UnityEngine.GameObject;
+            bulletExplosivo.transform.position = go.transform.position;
+
         }
 
-     
+
     }
 
-    private void CalculateDamage(GameObject go)
+    private void CalculateDamage(UnityEngine.GameObject go)
     {
         //for now, all hits subtract one health
         Health--;
+
+        if (Health <= 0)
+        {
+            Sim.RecordFrag(this, go.GetComponent<ProjectileState>().OwningTank);
+            DestroyTank();
+            Debug.Log(Name + " Destroyed ");
+        }
     }
 
+    private void DestroyTank()
+    {
+        if (currentState == TankState.destroyed)
+            return;
+
+        currentState = TankState.destroyed;
+        Stop();
+        StopTurret();
+
+
+        var explosivo = Instantiate(Resources.Load("Prefabs/TankExplosion")) as UnityEngine.GameObject;
+        explosivo.transform.position = transform.position;
+
+        var em = smokeParticleSystem.emission;
+        em.enabled = true;
+
+        destroyTime = DateTime.Now;
+    }
 
     public void ToggleForward()
     {
@@ -169,7 +286,7 @@ public class TankController : MonoBehaviour {
         toggleTurretRight = false;
     }
 
-   
+
 
     public void Forward()
     {
@@ -180,27 +297,31 @@ public class TankController : MonoBehaviour {
         }
         else
             Console.WriteLine("Root ref fixed");
-        root.transform.position += root.transform.forward * forwardSpeed;
+        root.GetComponent<Rigidbody>().AddForce(root.transform.forward * tankMovementForce);
     }
     public void Reverse()
     {
-        root.transform.position -= root.transform.forward * forwardSpeed;
+        root.GetComponent<Rigidbody>().AddForce(-root.transform.forward * tankMovementForce);
     }
+
     public void TurnRight()
     {
-        root.transform.RotateAround(Vector3.up, rotateSpeed);
+        //root.transform.Rotate(Vector3.up, rotateSpeed * Time.deltaTime);
+        root.GetComponent<Rigidbody>().AddTorque(root.transform.up * torqueForce);
     }
+
     public void TurnLeft()
     {
-        root.transform.RotateAround(Vector3.up, -rotateSpeed);
+        root.GetComponent<Rigidbody>().AddTorque(root.transform.up * -torqueForce);
     }
+
     public void TurretLeft()
     {
-        turret.transform.RotateAround(Vector3.up, -barrelRotateSpeed);
+        turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
     }
     public void TurretRight()
     {
-        turret.transform.RotateAround(Vector3.up, barrelRotateSpeed);
+        turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
     }
 
     public void Fire()
@@ -211,19 +332,24 @@ public class TankController : MonoBehaviour {
 
         if (Ammo < 1)
             return;
-        
+
         lastFireTime = DateTime.Now;
-        GameObject projectile = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        projectile.tag = "projectile";
-        projectile.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+        UnityEngine.GameObject projectile = Instantiate(Resources.Load("Prefabs/Projectile")) as UnityEngine.GameObject;
+        projectile.GetComponent<ProjectileState>().OwningTank = this;
         projectile.transform.position = firingPoint.transform.position;
-        projectile.AddComponent<Rigidbody>();
+        projectile.GetComponent<TrailRenderer>().enabled = true;
+        projectile.GetComponent<TrailRenderer>().Clear();
+
+        projectile.GetComponent<TrailRenderer>().startColor = mainTankColor;
+        projectile.GetComponent<TrailRenderer>().endColor = mainTankColor;
+
+
         projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
         Ammo--;
-        projectiles.Add(projectile,lastFireTime);
-        
+        projectiles.Add(projectile, lastFireTime);
+
     }
-    
+
 }
 
 

@@ -1,4 +1,4 @@
-﻿internal class GameCommand
+﻿public class GameCommand
 {
     public CommandType Type { get; set; }
     public string Token { get; set; }
@@ -6,9 +6,10 @@
 
 }
 
-internal enum CommandType
+public enum CommandType
 {
     PlayerCreate,
+    PlayerCreateTest,
     Forward,
     Reverse,
     Right,
@@ -17,5 +18,6 @@ internal enum CommandType
     TurretLeft,
     Stop,
     StopTurret,
-    Fire
+    Fire,
+    GetState
 }
