@@ -6,8 +6,7 @@ public class AITankController : TankController
 
     private float firingThreshold = 40f;
     private float distanceThreshold = 30f;
-    public bool infiniteHealth = true;
-    public bool infiniteAmmo = true;
+ 
 
     // Use this for initialization
     public override void Start()
@@ -68,10 +67,7 @@ public class AITankController : TankController
                 Forward();
         }
 
-        if (infiniteAmmo)
-            ReplenishAmmo();
-        if (infiniteHealth)
-            ReplenishHealth();
+      
 
     }
 

@@ -33,13 +33,25 @@ public class TankFactory : MonoBehaviour
         return tank;
     }
 
-    public GameObject CreateAITank(string mainColor, string name, Vector3 startingPosition)
+    public GameObject CreateDummyTank(string mainColor, string name, Vector3 startingPosition)
     {
-        var tank = CreateTank<AITankController>(mainColor);
+        var tank = CreateTank<DummyTank>(mainColor);
 
         
         PlaceTank(tank, startingPosition);
 
+        tank.GetComponent<DummyTank>().Name = name;
+        tank.GetComponent<DummyTank>().Token = "secretAITankControllerToken";
+
+
+        return tank;
+    }
+
+    public GameObject CreateAITank(string mainColor, string name, Vector3 startingPosition)
+    {
+        var tank = CreateTank<AITankController>(mainColor);
+
+        PlaceTank(tank, startingPosition);
         tank.GetComponent<AITankController>().Name = name;
         tank.GetComponent<AITankController>().Token = "secretAITankControllerToken";
 

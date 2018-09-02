@@ -27,8 +27,11 @@ public class GameSimulation
     public List<TankController> tankControllers;
     private List<GameObjectState> allObjects;
     private Dictionary<string, List<GameObjectState>> objectsInFieldOfView;
+
+
+
     public float fov = 45;
-    public float maxdistance = 10;
+    public float maxdistance = 100;
     private float arenaSize = 80f;
 
     public GameSimulation(GameSimRules ruleset)
@@ -64,7 +67,7 @@ public class GameSimulation
     internal GameObject CreatePlayerTest(PlayerCreateTest create)
     {
 
-        var t = tankFactory.CreateTank(create.Color, create.Name, create.Token, new Vector3(float.Parse(create.X), 5,float.Parse(create.Y)));
+        var t = tankFactory.CreateTank(create.Color, create.Name, create.Token, new Vector3(float.Parse(create.X), 5, float.Parse(create.Y)));
 
         t.GetComponent<TankController>().transform.Rotate(Vector3.up, float.Parse(create.Angle));
 
@@ -86,6 +89,18 @@ public class GameSimulation
         return t;
     }
 
+    internal GameObject CreateDummyTank(string color, string name, Vector3 startingPos, bool infiniteHealth, bool infiniteAmmo)
+    {
+        var t = tankFactory.CreateDummyTank(color, name, startingPos);
+
+        t.GetComponent<DummyTank>().Ruleset = rules;
+        t.GetComponent<DummyTank>().Sim = this;
+        t.GetComponent<DummyTank>().infiniteAmmo = infiniteAmmo;
+        t.GetComponent<DummyTank>().infiniteHealth = infiniteHealth;
+        tankControllers.Add(t.GetComponent<DummyTank>());
+        return t;
+    }
+
     private Vector3 RandomArenaPosition()
     {
         var randomCirclePoint = UnityEngine.Random.insideUnitCircle;
@@ -100,7 +115,7 @@ public class GameSimulation
     {
         allObjects.Clear();
 
-      
+
         if (enqueuedCommands.Count > 0)
         {
             GameCommand command = enqueuedCommands.Dequeue();
@@ -130,7 +145,7 @@ public class GameSimulation
         //get a random point in the arena
         Vector3 potentialStartPoint = RandomArenaPosition();
         tankController.transform.position = potentialStartPoint;
-     
+
         tankController.transform.Rotate(Vector3.up, UnityEngine.Random.Range(0, 360));
         tankController.ReActivate();
     }
@@ -150,16 +165,29 @@ public class GameSimulation
                 return;
 
             float distanceBetweenTanks = (t.transform.position - t2.transform.position).magnitude;
+
+
+         
+
             Vector3 toTank = t2.transform.position - t.transform.position;
             float angleBetweenForwardAndTank = Vector3.Angle(t.turret.transform.forward, toTank);
 
             if (distanceBetweenTanks < maxdistance && angleBetweenForwardAndTank < fov)
             {
+                Debug.DrawLine(t.transform.position, t2.transform.position, Color.green);
                 var obState = CreateTankState(t2);
                 objectsToAdd.Add(obState);
             }
+            else
+                Debug.DrawLine(t.transform.position, t2.transform.position, Color.red);
+
+
 
             objectsInFieldOfView[t.Token] = objectsToAdd;
+
+
+            Debug.Log(t.Name + " can see " + objectsInFieldOfView[t.Token].Count + " tanks ");
+
         }
     }
 
@@ -205,12 +233,21 @@ public class GameSimulation
     {
         TankController t = FindTankObject(command.Token);
 
+
+
         switch (command.Type)
         {
             case (CommandType.PlayerCreate):
 
                 PlayerCreate create = command.Payload as PlayerCreate;
                 var tank = CreatePlayer(create);
+                break;
+
+            case (CommandType.Despawn):
+
+                if (t != null)
+                    RemoveTank(t);
+
                 break;
 
             case (CommandType.PlayerCreateTest):
@@ -256,6 +293,13 @@ public class GameSimulation
                     t.Fire();
                 break;
         }
+    }
+
+    private void RemoveTank(TankController t)
+    {
+        tankControllers.Remove(t);
+        objectsInFieldOfView.Remove(t.Token);
+        GameObject.Destroy(t.gameObject);
     }
 
     public TankController FindTankObject(string token)

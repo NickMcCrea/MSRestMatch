@@ -19,5 +19,6 @@ public enum CommandType
     Stop,
     StopTurret,
     Fire,
-    GetState
+    GetState,
+    Despawn
 }

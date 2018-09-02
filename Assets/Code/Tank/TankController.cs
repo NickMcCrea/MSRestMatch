@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using TMPro;
 
 public class TankController : MonoBehaviour
 {
@@ -11,7 +12,8 @@ public class TankController : MonoBehaviour
         normal,
         destroyed
     }
-
+    public bool infiniteHealth = false;
+    public bool infiniteAmmo = false;
     public Color mainTankColor;
     public TankState currentState = TankState.normal;
     public volatile int Health = 10;
@@ -28,8 +30,6 @@ public class TankController : MonoBehaviour
     public UnityEngine.GameObject turret;
     public UnityEngine.GameObject barrel;
     public UnityEngine.GameObject firingPoint;
-    private float forwardSpeed = 5f;
-    private float rotateSpeed = 20f;
     private float barrelRotateSpeed = 2f;
     private float reorientateSpeed = 10f;
     private DateTime lastFireTime = DateTime.Now;
@@ -43,7 +43,6 @@ public class TankController : MonoBehaviour
     private DateTime destroyTime;
     private readonly int startingHealth = 10;
     private readonly int startingAmmo = 10;
-    private float projectileSize = 0.4f;
 
     private Dictionary<UnityEngine.GameObject, DateTime> projectiles;
 
@@ -57,6 +56,11 @@ public class TankController : MonoBehaviour
     public GameSimRules Ruleset { get; internal set; }
     public GameSimulation Sim { get; internal set; }
     public int Deaths { get; internal set; }
+    GameObject uiLabel;
+
+    AudioSource fireSound;
+    AudioSource shellHit;
+    AudioSource tankExplosion;
 
     // Use this for initialization
     public virtual void Start()
@@ -65,17 +69,32 @@ public class TankController : MonoBehaviour
         turret = root.transform.Find("top").gameObject;
         barrel = turret.transform.Find("barrel").gameObject;
         firingPoint = barrel.transform.Find("firingpoint").gameObject;
+        
+        uiLabel = Instantiate(Resources.Load("Prefabs/TextLabel")) as UnityEngine.GameObject;
+
+        uiLabel.GetComponent<TextMeshPro>().text = Name;
+
         projectiles = new Dictionary<UnityEngine.GameObject, DateTime>();
         Health = startingHealth;
         Ammo = startingAmmo;
         smokeParticleSystem = root.transform.Find("main").gameObject.GetComponent<ParticleSystem>();
         var em = smokeParticleSystem.emission;
+
+        var sources = GetComponents<AudioSource>();
+
+        fireSound = sources[0];
+        shellHit = sources[1];
+        tankExplosion = sources[2];
+
+
         em.enabled = false;
     }
 
     // Update is called once per frame
     public virtual void Update()
     {
+   
+
         ManageProjectiles();
 
         if (currentState == TankState.normal)
@@ -92,6 +111,10 @@ public class TankController : MonoBehaviour
                 TurretLeft();
             if (toggleTurretRight)
                 TurretRight();
+
+            Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
+            transform.rotation = Quaternion.Slerp(transform.rotation, q, Time.deltaTime * reorientateSpeed);
+
         }
         else if (currentState == TankState.destroyed)
         {
@@ -103,7 +126,11 @@ public class TankController : MonoBehaviour
         }
 
 
-
+        if (Camera.current != null)
+        {
+            uiLabel.transform.position = new Vector3(transform.position.x, 10, transform.position.z);
+            uiLabel.transform.LookAt( uiLabel.transform.position- Camera.current.transform.position);
+        }
 
         X = transform.position.x;
         Y = transform.position.y;
@@ -116,14 +143,19 @@ public class TankController : MonoBehaviour
         ForwardX = transform.forward.x;
         ForwardY = transform.forward.z;
 
-        Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
-        transform.rotation = Quaternion.Slerp(transform.rotation, q, Time.deltaTime * reorientateSpeed);
-
+      
 
         if(transform.position.y < -10)
         {
             DestroyTank();
         }
+
+
+        if (infiniteAmmo)
+            ReplenishAmmo();
+        if (infiniteHealth)
+            ReplenishHealth();
+
 
     }
 
@@ -205,6 +237,7 @@ public class TankController : MonoBehaviour
             var bulletExplosivo = Instantiate(Resources.Load("Prefabs/ShellExplosion")) as UnityEngine.GameObject;
             bulletExplosivo.transform.position = go.transform.position;
 
+            shellHit.Play();
         }
 
 
@@ -233,11 +266,16 @@ public class TankController : MonoBehaviour
         StopTurret();
 
 
-        var explosivo = Instantiate(Resources.Load("Prefabs/TankExplosion")) as UnityEngine.GameObject;
-        explosivo.transform.position = transform.position;
+        var explosivo1 = Instantiate(Resources.Load("Prefabs/Explosion")) as UnityEngine.GameObject;
+        explosivo1.transform.position = transform.position;
+
+        var explosivo2 = Instantiate(Resources.Load("Prefabs/TankExplosion")) as UnityEngine.GameObject;
+        explosivo2.transform.position = transform.position;
 
         var em = smokeParticleSystem.emission;
         em.enabled = true;
+
+        tankExplosion.Play();
 
         destroyTime = DateTime.Now;
     }
@@ -347,6 +385,8 @@ public class TankController : MonoBehaviour
         projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
         Ammo--;
         projectiles.Add(projectile, lastFireTime);
+
+        fireSound.Play();
 
     }
 

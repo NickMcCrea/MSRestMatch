@@ -19,6 +19,9 @@ public interface IService
     [OperationContract, WebInvoke(UriTemplate = "/tank/createtest/", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
     void CreateTestPlayer(PlayerCreateTest create);
 
+    [OperationContract, WebInvoke(UriTemplate = "/tank/{token}/despawn/", ResponseFormat = WebMessageFormat.Json)]
+    void Despawn(string token);
+
 
     [OperationContract, WebInvoke(UriTemplate = "/tank/{token}/forward/", ResponseFormat = WebMessageFormat.Json)]
     void Forward(string token);
@@ -183,6 +186,16 @@ class Service : IService
     public List<GameObjectState> GetFieldOfView(string token)
     {
         return simulation.GetObjectsInViewOfTank(token);
+    }
+
+    public void Despawn(string token)
+    {
+        Debug.Log("Player despawn request: " + token);
+
+        lock (simulation.enqueuedCommands)
+        {
+            simulation.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Despawn, Token = token, Payload = null });
+        }
     }
 }
 
