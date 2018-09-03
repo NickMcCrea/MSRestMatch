@@ -28,12 +28,12 @@ public class TrainingRoomMain : MonoBehaviour
 
         //simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank1", new Vector3(0, 0, 0), true, true);
 
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank1", new Vector3(0, 5, 0), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank2", new Vector3(30, 5, -30), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank3", new Vector3(30, 5, 0), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank4", new Vector3(0, 5, -30), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank5", new Vector3(30, 5, 30), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank6", new Vector3(-30, 5, -30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank1", new Vector3(0, 5, 0), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank2", new Vector3(30, 5, -30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank3", new Vector3(30, 5, 0), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank4", new Vector3(0, 5, -30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank5", new Vector3(30, 5, 30), false, true);
+        simulation.CreateAITank(GenerateRandomHexColorString(), "AITank6", new Vector3(-30, 5, -30), false, true);
 
     }
 

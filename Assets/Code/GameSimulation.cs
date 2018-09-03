@@ -30,7 +30,7 @@ public class GameSimulation
 
 
 
-    public float fov = 45;
+    public float fov = 40;
     public float maxdistance = 100;
     private float arenaSize = 80f;
 
@@ -167,19 +167,34 @@ public class GameSimulation
             float distanceBetweenTanks = (t.transform.position - t2.transform.position).magnitude;
 
 
-         
+
 
             Vector3 toTank = t2.transform.position - t.transform.position;
-            float angleBetweenForwardAndTank = Vector3.Angle(t.turret.transform.forward, toTank);
+            toTank.Normalize();
 
-            if (distanceBetweenTanks < maxdistance && angleBetweenForwardAndTank < fov)
+            //turret is the wrong way round, so need to use up.
+            float angle = Vector3.Angle(t.turret.transform.up, toTank);
+          
+
+            float dot = Vector3.Dot(t.turret.transform.up, toTank);
+
+            if (distanceBetweenTanks < maxdistance && (Mathf.Abs(angle) < fov / 2))
             {
-                Debug.DrawLine(t.transform.position, t2.transform.position, Color.green);
-                var obState = CreateTankState(t2);
-                objectsToAdd.Add(obState);
+                if (dot > 0 && dot < 1)
+                {
+
+                    if (t.Name == "AITank1")
+                    {
+                        Debug.DrawLine(t.transform.position, t2.transform.position, Color.green, 0);
+                        Debug.Log("AITank1 sees : " + t2.Name + " distance: " + distanceBetweenTanks + " angle: " + angle + " dot: " + dot);
+                    }
+
+                    var obState = CreateTankState(t2);
+                    objectsToAdd.Add(obState);
+                }
+
+               
             }
-            else
-                Debug.DrawLine(t.transform.position, t2.transform.position, Color.red);
 
 
 

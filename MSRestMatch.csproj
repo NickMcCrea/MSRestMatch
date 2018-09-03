@@ -321,6 +321,7 @@
   <ItemGroup>
     <Compile Include="Assets\Code\Camera\CameraControl.cs" />
     <Compile Include="Assets\Code\Camera\FlyCamera.cs" />
+    <Compile Include="Assets\Code\ForwardTest.cs" />
     <Compile Include="Assets\Code\GameCommand.cs" />
     <Compile Include="Assets\Code\GameRestServer.cs" />
     <Compile Include="Assets\Code\GameSimulation.cs" />
