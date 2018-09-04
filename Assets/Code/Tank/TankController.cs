@@ -20,9 +20,12 @@ public class TankController : MonoBehaviour
     public volatile int Ammo = 10;
     public volatile float X;
     public volatile float Y;
-    public volatile float Heading;
     public volatile float ForwardX;
     public volatile float ForwardY;
+    public volatile float Heading;
+    public volatile float TurretHeading;
+    public volatile float TurretForwardX;
+    public volatile float TurretForwardY;
     public string Token;
     public string Name;
     public int Kills;
@@ -30,7 +33,7 @@ public class TankController : MonoBehaviour
     public UnityEngine.GameObject turret;
     public UnityEngine.GameObject barrel;
     public UnityEngine.GameObject firingPoint;
-    private float barrelRotateSpeed = 2f;
+    private float barrelRotateSpeed = 0.5f;
     private float reorientateSpeed = 10f;
     private DateTime lastFireTime = DateTime.Now;
     private float fireInterval = 2;
@@ -133,19 +136,25 @@ public class TankController : MonoBehaviour
         }
 
         X = transform.position.x;
-        Y = transform.position.y;
+        Y = transform.position.z;
+        ForwardX = transform.forward.x;
+        ForwardY = transform.forward.z;
 
         //A = atan2(V.y, V.x)
         Heading = (float)Math.Atan2(transform.forward.z, transform.forward.x);
         Heading = Heading * Mathf.Rad2Deg;
         Heading = (Heading + 360) % 360;
 
-        ForwardX = transform.forward.x;
-        ForwardY = transform.forward.z;
+        TurretHeading = (float)Math.Atan2(turret.transform.up.z, turret.transform.up.x);
+        TurretHeading = TurretHeading * Mathf.Rad2Deg;
+        TurretHeading = (TurretHeading + 360) % 360;
 
-      
 
-        if(transform.position.y < -10)
+        TurretForwardX = turret.transform.up.x;
+        TurretForwardY = turret.transform.up.z;
+
+
+        if (transform.position.y < -10)
         {
             DestroyTank();
         }

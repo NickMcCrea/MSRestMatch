@@ -176,7 +176,7 @@ class Service : IService
             foreach (TankController t in simulation.tankControllers)
             {
                 if (t.Token == token)
-                    return new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, ForwardX = t.ForwardX, ForwardY = t.ForwardY };
+                    return new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
             }
             
         }

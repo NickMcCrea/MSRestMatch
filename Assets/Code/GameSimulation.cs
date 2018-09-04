@@ -8,12 +8,13 @@ public class GameObjectState
     public string Type { get; set; }
     public float X { get; set; }
     public float Y { get; set; }
-    public float Heading { get; set; }
     public float ForwardX { get; set; }
     public float ForwardY { get; set; }
+    public float Heading { get; set; }
     public float TurretHeading { get; set; }
     public float TurretForwardX { get; set; }
     public float TurretForwardY { get; set; }
+
     public int Health { get; set; }
     public int Ammo { get; set; }
 }
@@ -30,7 +31,7 @@ public class GameSimulation
 
 
 
-    public float fov = 40;
+    public float fov = 50;
     public float maxdistance = 100;
     private float arenaSize = 80f;
 
@@ -174,7 +175,7 @@ public class GameSimulation
 
             //turret is the wrong way round, so need to use up.
             float angle = Vector3.Angle(t.turret.transform.up, toTank);
-          
+
 
             float dot = Vector3.Dot(t.turret.transform.up, toTank);
 
@@ -186,14 +187,14 @@ public class GameSimulation
                     if (t.Name == "AITank1")
                     {
                         Debug.DrawLine(t.transform.position, t2.transform.position, Color.green, 0);
-                        Debug.Log("AITank1 sees : " + t2.Name + " distance: " + distanceBetweenTanks + " angle: " + angle + " dot: " + dot);
+                        //Debug.Log("AITank1 sees : " + t2.Name + " distance: " + distanceBetweenTanks + " angle: " + angle + " dot: " + dot);
                     }
 
                     var obState = CreateTankState(t2);
                     objectsToAdd.Add(obState);
                 }
 
-               
+
             }
 
 
@@ -201,7 +202,7 @@ public class GameSimulation
             objectsInFieldOfView[t.Token] = objectsToAdd;
 
 
-            Debug.Log(t.Name + " can see " + objectsInFieldOfView[t.Token].Count + " tanks ");
+            //Debug.Log(t.Name + " can see " + objectsInFieldOfView[t.Token].Count + " tanks ");
 
         }
     }
@@ -230,17 +231,13 @@ public class GameSimulation
     {
         GameObjectState s = new GameObjectState();
         s.Ammo = t.Ammo;
-        s.ForwardX = t.ForwardX;
-        s.ForwardY = t.ForwardY;
         s.Heading = t.Heading;
         s.Health = t.Health;
         s.Name = t.Name;
         s.Type = "Tank";
         s.X = t.X;
         s.Y = t.Y;
-        s.TurretHeading = 0;
-        s.TurretForwardX = 0;
-        s.TurretForwardY = 0;
+        s.TurretHeading = t.TurretHeading;
         return s;
     }
 
@@ -330,9 +327,14 @@ public class GameSimulation
 
     internal List<GameObjectState> GetObjectsInViewOfTank(string token)
     {
-        if (objectsInFieldOfView.Count > 0)
-            return objectsInFieldOfView[token];
-        return null;
+        lock (objectsInFieldOfView)
+        {
+            if (objectsInFieldOfView.Count > 0)
+                if (objectsInFieldOfView.ContainsKey(token))
+                    return objectsInFieldOfView[token];
+
+        }
+        return new List<GameObjectState>();
     }
 }
 

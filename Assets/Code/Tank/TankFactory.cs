@@ -41,7 +41,7 @@ public class TankFactory : MonoBehaviour
         PlaceTank(tank, startingPosition);
 
         tank.GetComponent<DummyTank>().Name = name;
-        tank.GetComponent<DummyTank>().Token = "secretAITankControllerToken";
+        tank.GetComponent<DummyTank>().Token = new Guid().ToString();
 
 
         return tank;
@@ -53,7 +53,7 @@ public class TankFactory : MonoBehaviour
 
         PlaceTank(tank, startingPosition);
         tank.GetComponent<AITankController>().Name = name;
-        tank.GetComponent<AITankController>().Token = "secretAITankControllerToken";
+        tank.GetComponent<AITankController>().Token = new Guid().ToString();
 
 
         return tank;
