@@ -44,6 +44,7 @@ public class GameSimulation
         tankControllers = new List<TankController>();
         allObjects = new List<GameObjectState>();
         objectsInFieldOfView = new Dictionary<string, List<GameObjectState>>();
+       
     }
 
     internal GameObject CreatePlayer(PlayerCreate create)

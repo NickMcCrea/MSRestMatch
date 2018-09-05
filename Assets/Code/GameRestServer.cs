@@ -78,7 +78,7 @@ class Service : IService
     public void CreatePlayer(PlayerCreate create)
     {
         Debug.Log("Player create request: " + create.Name);
-
+        
         lock (simulation.enqueuedCommands)
         {
             simulation.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.PlayerCreate, Payload = create });

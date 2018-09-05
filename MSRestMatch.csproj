@@ -326,6 +326,7 @@
     <Compile Include="Assets\Code\GameRestServer.cs" />
     <Compile Include="Assets\Code\GameSimulation.cs" />
     <Compile Include="Assets\Code\MainMenu.cs" />
+    <Compile Include="Assets\Code\Network\TCPTestServer.cs" />
     <Compile Include="Assets\Code\Player.cs" />
     <Compile Include="Assets\Code\Tank\AITankController.cs" />
     <Compile Include="Assets\Code\Tank\DerivedTankController.cs" />
