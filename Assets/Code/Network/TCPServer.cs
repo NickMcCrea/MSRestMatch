@@ -8,8 +8,6 @@ using UnityEngine;
 
 
 
-
-
 public class TCPServer
 {
 
@@ -19,11 +17,11 @@ public class TCPServer
     private readonly int port = 8052;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
-    private Queue<string> messages;
+    private Queue<NetworkMessage> messages;
 
     public TCPServer()
     {
-        messages = new Queue<string>();
+        messages = new Queue<NetworkMessage>();
         connectedClients = new List<TcpClient>();
         networkThread = new Thread(new ThreadStart(StartServer));
 
@@ -38,14 +36,10 @@ public class TCPServer
 
         while (listening)
         {
-
             var client = tcpListener.AcceptTcpClient();
             ThreadPool.QueueUserWorkItem(NewClientConnection, client);
             Thread.Sleep(16);
         }
-
-
-
     }
 
     public void Close()
@@ -66,32 +60,77 @@ public class TCPServer
         // Get a stream object for reading 					
         using (NetworkStream stream = client.GetStream())
         {
-            int length;
 
+            int length;
             // Read incomming stream into byte arrary. 						
             while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
             {
-                var incomingData = new byte[length];
-                Array.Copy(bytes, 0, incomingData, 0, length);
-                // Convert byte array to string message. 							
-                string clientMessage = Encoding.ASCII.GetString(incomingData);          
-                lock (messages)
-                {
-                    messages.Enqueue(clientMessage);
-                }
+                DecodeMessage((NetworkMessageType)bytes[0], bytes, length);
             }
         }
 
     }
 
-    public void Update()
+    private void DecodeMessage(NetworkMessageType messageType, byte[] bytes, int length)
     {
+        switch (messageType)
+        {
+            case (NetworkMessageType.test):
 
-        if (messages.Count > 0)
-            Debug.Log(messages.Dequeue());
 
+                var incomingData = new byte[length];
+                Array.Copy(bytes, 1, incomingData, 0, length);
+                string clientMessage = Encoding.ASCII.GetString(incomingData);
 
+                lock (messages)
+                {
+                    messages.Enqueue(new NetworkMessage() { type = NetworkMessageType.test, data = clientMessage });
+                }
+
+                break;
+
+            case (NetworkMessageType.b):
+
+                break;
+
+            default:
+
+                break;
+        }
     }
 
+    public void Update()
+    {
+        if (messages.Count > 0)
+        {
+            var newMessage = messages.Dequeue();
+            HandleMessage(newMessage);
+        }
+    }
+
+    private void HandleMessage(NetworkMessage newMessage)
+    {
+        if (newMessage.type == NetworkMessageType.test)
+        {
+            Debug.Log((string)newMessage.data);
+
+        }
+    }
+
+}
+
+
+public struct NetworkMessage
+{
+    public NetworkMessageType type;
+    public object data;
+}
+
+
+public enum NetworkMessageType
+{
+    test = 0,
+    b = 1,
+    c = 2,
 
 }
