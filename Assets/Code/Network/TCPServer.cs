@@ -18,9 +18,11 @@ public class TCPServer
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
     private Queue<NetworkMessage> messages;
+    private GameSimulation sim;
 
-    public TCPServer()
+    public TCPServer(GameSimulation simulation)
     {
+        sim = simulation;
         messages = new Queue<NetworkMessage>();
         connectedClients = new List<TcpClient>();
         networkThread = new Thread(new ThreadStart(StartServer));
@@ -50,6 +52,7 @@ public class TCPServer
     private void NewClientConnection(object obj)
     {
         var client = (TcpClient)obj;
+
         lock (connectedClients)
         {
             connectedClients.Add(client);
@@ -73,31 +76,18 @@ public class TCPServer
 
     private void DecodeMessage(NetworkMessageType messageType, byte[] bytes, int length)
     {
-        switch (messageType)
+
+        var incomingData = new byte[length];
+        Array.Copy(bytes, 1, incomingData, 0, length);
+        string clientMessage = Encoding.ASCII.GetString(incomingData);
+
+        lock (messages)
         {
-            case (NetworkMessageType.test):
-
-
-                var incomingData = new byte[length];
-                Array.Copy(bytes, 1, incomingData, 0, length);
-                string clientMessage = Encoding.ASCII.GetString(incomingData);
-
-                lock (messages)
-                {
-                    messages.Enqueue(new NetworkMessage() { type = NetworkMessageType.test, data = clientMessage });
-                }
-
-                break;
-
-            case (NetworkMessageType.b):
-
-                break;
-
-            default:
-
-                break;
+            messages.Enqueue(new NetworkMessage() { type = messageType, data = clientMessage });
         }
+
     }
+
 
     public void Update()
     {
@@ -110,12 +100,35 @@ public class TCPServer
 
     private void HandleMessage(NetworkMessage newMessage)
     {
-        if (newMessage.type == NetworkMessageType.test)
+        Debug.Log(newMessage.type + " - " + (string)newMessage.data);
+
+        switch (newMessage.type)
         {
-            Debug.Log((string)newMessage.data);
+
+            case (NetworkMessageType.test):
+              
+                break;
+
+
+            case (NetworkMessageType.createTank):
+
+                var arguments = ((string)newMessage.data).Split(':');
+
+                sim.enqueuedCommands.Enqueue(new GameCommand()
+                {
+                    Type = CommandType.PlayerCreate,
+                    Payload = new PlayerCreate() { Name = arguments[0], Token = arguments[1], Color = arguments[2] },
+                    Token = arguments[1]
+                });
+
+                break;
+
 
         }
+
+
     }
+
 
 }
 
@@ -130,7 +143,16 @@ public struct NetworkMessage
 public enum NetworkMessageType
 {
     test = 0,
-    b = 1,
-    c = 2,
+    createTank = 1,
+    despawnTank = 2,
+    fire,
+    forward,
+    reverse,
+    left,
+    right,
+    stop,
+    turretLeft,
+    turretRight,
+    stopTurret,
 
 }
