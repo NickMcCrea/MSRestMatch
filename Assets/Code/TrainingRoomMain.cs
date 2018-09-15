@@ -9,9 +9,9 @@ public class TrainingRoomMain : MonoBehaviour
 {
 
 
-    WebServiceHost host;
+    //WebServiceHost host;
     GameSimulation simulation;
-    TCPTestServer testServer;
+    TCPServer server;
     // Use this for initialization
     void Start()
     {
@@ -37,12 +37,13 @@ public class TrainingRoomMain : MonoBehaviour
         //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank5", new Vector3(30, 5, 30), false, true);
         //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank6", new Vector3(-30, 5, -30), false, true);
 
-        testServer = new TCPTestServer();
+        server = new TCPServer();
     }
 
     private void OnApplicationQuit()
     {
-        host.Close();
+        server.Close();
+       
     }
 
     private static string GenerateRandomHexColorString()
@@ -56,8 +57,8 @@ public class TrainingRoomMain : MonoBehaviour
 
 
         simulation.Update();
-        testServer.Update();
+        server.Update();
     }
 
-    
+
 }
