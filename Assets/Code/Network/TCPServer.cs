@@ -17,6 +17,7 @@ public class TCPServer
     private readonly int port = 8052;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
+    private Dictionary<string, TcpClient> tokenToClientMap;
     private Queue<NetworkMessage> messages;
     private GameSimulation sim;
 
@@ -25,6 +26,7 @@ public class TCPServer
         sim = simulation;
         messages = new Queue<NetworkMessage>();
         connectedClients = new List<TcpClient>();
+        tokenToClientMap = new Dictionary<string, TcpClient>();
         networkThread = new Thread(new ThreadStart(StartServer));
 
         networkThread.Start();
@@ -51,35 +53,53 @@ public class TCPServer
 
     private void NewClientConnection(object obj)
     {
-        var client = (TcpClient)obj;
-
-        lock (connectedClients)
+        try
         {
-            connectedClients.Add(client);
-        }
-
-
-        Byte[] bytes = new Byte[1024];
-        // Get a stream object for reading 					
-        using (NetworkStream stream = client.GetStream())
-        {
-
-            int length;
-            // Read incomming stream into byte arrary. 						
-            while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+            var client = (TcpClient)obj;
+            lock (connectedClients)
             {
-                DecodeMessage((NetworkMessageType)bytes[0], bytes, length);
+                connectedClients.Add(client);
             }
+
+
+            Byte[] bytes = new Byte[1024];
+            // Get a stream object for reading 					
+            using (NetworkStream stream = client.GetStream())
+            {
+
+                int length;
+                // Read incomming stream into byte arrary. 						
+                while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+                {
+                    DecodeMessage(client, (NetworkMessageType)bytes[0], bytes, length);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            //this is terrible. I give no fucks.
         }
 
     }
 
-    private void DecodeMessage(NetworkMessageType messageType, byte[] bytes, int length)
+    private void DecodeMessage(TcpClient client, NetworkMessageType messageType, byte[] bytes, int length)
     {
 
         var incomingData = new byte[length];
         Array.Copy(bytes, 1, incomingData, 0, length);
         string clientMessage = Encoding.ASCII.GetString(incomingData);
+
+
+        var strings = clientMessage.Split(':');
+        var token = strings[0];
+
+        //map a client to a token. Allows us to identify who to send updates to.
+        if (messageType == NetworkMessageType.createTank)
+            tokenToClientMap.Add(token, client);
+
+        //try mapping the client to a token, to allow us to link tanks to TCP connections
+        //if (tokenToClientMap.ContainsKey(token))
+        //    tokenToClientMap[token] = client;
 
         lock (messages)
         {
@@ -100,30 +120,74 @@ public class TCPServer
 
     private void HandleMessage(NetworkMessage newMessage)
     {
-        Debug.Log(newMessage.type + " - " + (string)newMessage.data);
-
-        switch (newMessage.type)
+        try
         {
+            Debug.Log(newMessage.type + " - " + (string)newMessage.data);
 
-            case (NetworkMessageType.test):
-              
-                break;
+            var arguments = ((string)newMessage.data).Split(':');
 
+            switch (newMessage.type)
+            {
 
-            case (NetworkMessageType.createTank):
+                case (NetworkMessageType.test):
 
-                var arguments = ((string)newMessage.data).Split(':');
-
-                sim.enqueuedCommands.Enqueue(new GameCommand()
-                {
-                    Type = CommandType.PlayerCreate,
-                    Payload = new PlayerCreate() { Name = arguments[0], Token = arguments[1], Color = arguments[2] },
-                    Token = arguments[1]
-                });
-
-                break;
+                    break;
 
 
+                case (NetworkMessageType.createTank):
+
+                    sim.enqueuedCommands.Enqueue(new GameCommand()
+                    {
+                        Type = CommandType.PlayerCreate,
+                        Payload = new PlayerCreate() { Name = arguments[1], Token = arguments[0], Color = arguments[2] },
+                        Token = arguments[1]
+                    });
+
+                    break;
+
+                case (NetworkMessageType.despawnTank):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Despawn, Token = arguments[0], Payload = null });
+                    break;
+
+                case (NetworkMessageType.fire):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Fire, Token = arguments[0], Payload = null });
+                    break;
+                case (NetworkMessageType.stopTurret):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.StopTurret, Token = arguments[0], Payload = null });
+                    break;
+
+                case (NetworkMessageType.stop):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Stop, Token = arguments[0], Payload = null });
+                    break;
+
+                case (NetworkMessageType.turretLeft):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretLeft, Token = arguments[0], Payload = null });
+                    break;
+                case (NetworkMessageType.turretRight):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretRight, Token = arguments[0], Payload = null });
+                    break;
+
+                case (NetworkMessageType.left):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Left, Token = arguments[0], Payload = null });
+                    break;
+
+                case (NetworkMessageType.right):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Right, Token = arguments[0], Payload = null });
+                    break;
+
+                case (NetworkMessageType.reverse):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Reverse, Token = arguments[0], Payload = null });
+                    break;
+                case (NetworkMessageType.forward):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Forward, Token = arguments[0], Payload = null });
+                    break;
+
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
         }
 
 
@@ -145,14 +209,14 @@ public enum NetworkMessageType
     test = 0,
     createTank = 1,
     despawnTank = 2,
-    fire,
-    forward,
-    reverse,
-    left,
-    right,
-    stop,
-    turretLeft,
-    turretRight,
-    stopTurret,
+    fire=3,
+    forward=4,
+    reverse=5,
+    left=6,
+    right=7,
+    stop=8,
+    turretLeft=9,
+    turretRight=10,
+    stopTurret=11,
 
 }
