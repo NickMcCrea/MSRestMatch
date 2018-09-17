@@ -10,7 +10,8 @@ using UnityEngine;
 
 public class TCPServer
 {
-
+    private TimeSpan updateMessageInterval = new TimeSpan(0, 0, 0, 0, 300);
+    private Dictionary<string, DateTime> tokenUpdateMap;
     private TcpListener tcpListener;
     private Thread networkThread;
     private readonly string ipAddress = "127.0.0.1";
@@ -27,6 +28,7 @@ public class TCPServer
         messages = new Queue<NetworkMessage>();
         connectedClients = new List<TcpClient>();
         tokenToClientMap = new Dictionary<string, TcpClient>();
+        tokenUpdateMap = new Dictionary<string, DateTime>();
         networkThread = new Thread(new ThreadStart(StartServer));
 
         networkThread.Start();
@@ -95,11 +97,15 @@ public class TCPServer
 
         //map a client to a token. Allows us to identify who to send updates to.
         if (messageType == NetworkMessageType.createTank)
-            tokenToClientMap.Add(token, client);
+        {
+            if (!tokenToClientMap.ContainsKey(token))
+                tokenToClientMap.Add(token, client);
 
-        //try mapping the client to a token, to allow us to link tanks to TCP connections
-        //if (tokenToClientMap.ContainsKey(token))
-        //    tokenToClientMap[token] = client;
+            if (!tokenUpdateMap.ContainsKey(token))
+                tokenUpdateMap.Add(token, DateTime.Now);
+        }
+
+
 
         lock (messages)
         {
@@ -108,13 +114,103 @@ public class TCPServer
 
     }
 
-
     public void Update()
     {
         if (messages.Count > 0)
         {
             var newMessage = messages.Dequeue();
             HandleMessage(newMessage);
+        }
+
+        foreach (string token in tokenUpdateMap.Keys)
+        {
+            TimeSpan timeSinceUpdated = DateTime.Now - tokenUpdateMap[token];
+            if (timeSinceUpdated > updateMessageInterval)
+            {
+                //send update for this client.
+                UpdateClientWithOwnState(token);
+                UpdateClientWithOtherObjectState(token);
+                tokenUpdateMap[token] = DateTime.Now;
+            }
+        }
+
+
+    }
+
+    private void SendMessage(TcpClient client, byte[] message)
+    {
+        if (client == null)
+        {
+            return;
+        }
+        try
+        {
+            // Get a stream object for writing. 			
+            NetworkStream stream = client.GetStream();
+            if (stream.CanWrite)
+            {
+                stream.Write(message, 0, message.Length);
+
+            }
+        }
+        catch (SocketException socketException)
+        {
+            Console.WriteLine("Socket exception: " + socketException);
+        }
+    }
+
+    private void UpdateClientWithOwnState(string token)
+    {
+        if (!tokenToClientMap.ContainsKey(token))
+            return;
+
+        try
+        {
+
+            TcpClient client = tokenToClientMap[token];
+            if (client.Connected)
+            {
+                foreach (TankController t in sim.tankControllers)
+                {
+                    if (t.Token == token)
+                    {
+                        var obj = new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
+                        SendMessage(client, MessageFactory.CreateObjectUpdateMessage(obj));
+                        return;
+                    }
+                }
+
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
+        }
+    }
+
+    private void UpdateClientWithOtherObjectState(string token)
+    {
+        if (!tokenToClientMap.ContainsKey(token))
+            return;
+
+        try
+        {
+
+            TcpClient client = tokenToClientMap[token];
+            if (client.Connected)
+            {
+                var gameObjectsInView = sim.GetObjectsInViewOfTank(token);
+
+                foreach(GameObjectState s in gameObjectsInView)
+                    SendMessage(client, MessageFactory.CreateObjectUpdateMessage(s));
+
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
         }
     }
 
@@ -196,6 +292,31 @@ public class TCPServer
 
 }
 
+public static class MessageFactory
+{
+
+    public static byte[] CreateObjectUpdateMessage(GameObjectState objectState)
+    {
+
+        string objectStateString = objectState.ToString();
+        byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(objectStateString);
+        return AddByteStartOfToArray(clientMessageAsByteArray, 12);
+
+    }
+
+    public static byte[] AddByteStartOfToArray(byte[] bArray, byte newByte)
+    {
+        byte[] newArray = new byte[bArray.Length + 1];
+        bArray.CopyTo(newArray, 1);
+        newArray[0] = newByte;
+        return newArray;
+    }
+
+    
+
+
+}
+
 
 public struct NetworkMessage
 {
@@ -209,14 +330,15 @@ public enum NetworkMessageType
     test = 0,
     createTank = 1,
     despawnTank = 2,
-    fire=3,
-    forward=4,
-    reverse=5,
-    left=6,
-    right=7,
-    stop=8,
-    turretLeft=9,
-    turretRight=10,
-    stopTurret=11,
+    fire = 3,
+    forward = 4,
+    reverse = 5,
+    left = 6,
+    right = 7,
+    stop = 8,
+    turretLeft = 9,
+    turretRight = 10,
+    stopTurret = 11,
+    objectUpdate=12,
 
 }

@@ -17,6 +17,11 @@ public class GameObjectState
 
     public int Health { get; set; }
     public int Ammo { get; set; }
+
+    public override string ToString()
+    {
+        return Name + ":" + Type + ":" + Health + ":" + Ammo + ":" + X + ":" + Y + ":" + Heading + ":" + TurretHeading;
+    }
 }
 
 public class GameSimulation
