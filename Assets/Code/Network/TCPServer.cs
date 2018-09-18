@@ -11,26 +11,24 @@ using UnityEngine;
 public class TCPServer
 {
     private TimeSpan updateMessageInterval = new TimeSpan(0, 0, 0, 0, 300);
-    private Dictionary<string, DateTime> tokenUpdateMap;
     private TcpListener tcpListener;
     private Thread networkThread;
     private readonly string ipAddress = "127.0.0.1";
     private readonly int port = 8052;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
-    private Dictionary<string, TcpClient> tokenToClientMap;
     private Queue<NetworkMessage> messages;
     private GameSimulation sim;
+    DateTime ownStateLastUpdate = DateTime.Now;
+    DateTime objectStateLastUpdate = DateTime.Now;
 
     public TCPServer(GameSimulation simulation)
     {
         sim = simulation;
         messages = new Queue<NetworkMessage>();
-        connectedClients = new List<TcpClient>();
-        tokenToClientMap = new Dictionary<string, TcpClient>();
-        tokenUpdateMap = new Dictionary<string, DateTime>();
         networkThread = new Thread(new ThreadStart(StartServer));
-
+        connectedClients = new List<TcpClient>();
+      
         networkThread.Start();
     }
 
@@ -58,11 +56,11 @@ public class TCPServer
         try
         {
             var client = (TcpClient)obj;
+
             lock (connectedClients)
             {
                 connectedClients.Add(client);
             }
-
 
             Byte[] bytes = new Byte[1024];
             // Get a stream object for reading 					
@@ -95,21 +93,10 @@ public class TCPServer
         var strings = clientMessage.Split(':');
         var token = strings[0];
 
-        //map a client to a token. Allows us to identify who to send updates to.
-        if (messageType == NetworkMessageType.createTank)
-        {
-            if (!tokenToClientMap.ContainsKey(token))
-                tokenToClientMap.Add(token, client);
-
-            if (!tokenUpdateMap.ContainsKey(token))
-                tokenUpdateMap.Add(token, DateTime.Now);
-        }
-
-
 
         lock (messages)
         {
-            messages.Enqueue(new NetworkMessage() { type = messageType, data = clientMessage });
+            messages.Enqueue(new NetworkMessage() { type = messageType, data = clientMessage, sender = client});
         }
 
     }
@@ -122,18 +109,24 @@ public class TCPServer
             HandleMessage(newMessage);
         }
 
-        foreach (string token in tokenUpdateMap.Keys)
+
+        if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
         {
-            TimeSpan timeSinceUpdated = DateTime.Now - tokenUpdateMap[token];
-            if (timeSinceUpdated > updateMessageInterval)
+            foreach (TcpClient c in connectedClients)
             {
-                //send update for this client.
-                UpdateClientWithOwnState(token);
-                UpdateClientWithOtherObjectState(token);
-                tokenUpdateMap[token] = DateTime.Now;
+                UpdateClientWithOwnState(c);
             }
+            ownStateLastUpdate = DateTime.Now;
         }
 
+        if ((DateTime.Now - objectStateLastUpdate).TotalMilliseconds > 500)
+        {
+            foreach (TcpClient c in connectedClients)
+            {
+                UpdateClientWithOtherObjectState(c);
+            }
+            objectStateLastUpdate = DateTime.Now;
+        }
 
     }
 
@@ -150,6 +143,7 @@ public class TCPServer
             if (stream.CanWrite)
             {
                 stream.Write(message, 0, message.Length);
+              
 
             }
         }
@@ -159,20 +153,18 @@ public class TCPServer
         }
     }
 
-    private void UpdateClientWithOwnState(string token)
+    private void UpdateClientWithOwnState(TcpClient client)
     {
-        if (!tokenToClientMap.ContainsKey(token))
-            return;
+        
 
         try
         {
 
-            TcpClient client = tokenToClientMap[token];
             if (client.Connected)
             {
                 foreach (TankController t in sim.tankControllers)
                 {
-                    if (t.Token == token)
+                    if (t.Token == client.Client.RemoteEndPoint.ToString())
                     {
                         var obj = new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
                         SendMessage(client, MessageFactory.CreateObjectUpdateMessage(obj));
@@ -189,18 +181,16 @@ public class TCPServer
         }
     }
 
-    private void UpdateClientWithOtherObjectState(string token)
+    private void UpdateClientWithOtherObjectState(TcpClient client)
     {
-        if (!tokenToClientMap.ContainsKey(token))
-            return;
+       
 
         try
         {
-
-            TcpClient client = tokenToClientMap[token];
+      
             if (client.Connected)
             {
-                var gameObjectsInView = sim.GetObjectsInViewOfTank(token);
+                var gameObjectsInView = sim.GetObjectsInViewOfTank(client.Client.RemoteEndPoint.ToString());
 
                 foreach(GameObjectState s in gameObjectsInView)
                     SendMessage(client, MessageFactory.CreateObjectUpdateMessage(s));
@@ -220,6 +210,8 @@ public class TCPServer
         {
             Debug.Log(newMessage.type + " - " + (string)newMessage.data);
 
+            string clientId = newMessage.sender.Client.RemoteEndPoint.ToString();
+
             var arguments = ((string)newMessage.data).Split(':');
 
             switch (newMessage.type)
@@ -235,47 +227,47 @@ public class TCPServer
                     sim.enqueuedCommands.Enqueue(new GameCommand()
                     {
                         Type = CommandType.PlayerCreate,
-                        Payload = new PlayerCreate() { Name = arguments[1], Token = arguments[0], Color = arguments[2] },
+                        Payload = new PlayerCreate() { Name = arguments[0], Token = clientId, Color = arguments[1] },
                         Token = arguments[1]
                     });
 
                     break;
 
                 case (NetworkMessageType.despawnTank):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Despawn, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Despawn, Token = clientId, Payload = null });
                     break;
 
                 case (NetworkMessageType.fire):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Fire, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Fire, Token = clientId, Payload = null });
                     break;
                 case (NetworkMessageType.stopTurret):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.StopTurret, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.StopTurret, Token = clientId, Payload = null });
                     break;
 
                 case (NetworkMessageType.stop):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Stop, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Stop, Token = clientId, Payload = null });
                     break;
 
                 case (NetworkMessageType.turretLeft):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretLeft, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretLeft, Token = clientId, Payload = null });
                     break;
                 case (NetworkMessageType.turretRight):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretRight, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretRight, Token = clientId, Payload = null });
                     break;
 
                 case (NetworkMessageType.left):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Left, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Left, Token = clientId, Payload = null });
                     break;
 
                 case (NetworkMessageType.right):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Right, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Right, Token = clientId, Payload = null });
                     break;
 
                 case (NetworkMessageType.reverse):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Reverse, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Reverse, Token = clientId, Payload = null });
                     break;
                 case (NetworkMessageType.forward):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Forward, Token = arguments[0], Payload = null });
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Forward, Token = clientId, Payload = null });
                     break;
 
 
@@ -322,6 +314,7 @@ public struct NetworkMessage
 {
     public NetworkMessageType type;
     public object data;
+    public TcpClient sender;
 }
 
 
