@@ -33,7 +33,7 @@ public class GameSimulation
     public List<TankController> tankControllers;
     private List<GameObjectState> allObjects;
     private Dictionary<string, List<GameObjectState>> objectsInFieldOfView;
-
+    private List<TankController> tanksToBeRemoved;
 
 
     public float fov = 50;
@@ -49,7 +49,8 @@ public class GameSimulation
         tankControllers = new List<TankController>();
         allObjects = new List<GameObjectState>();
         objectsInFieldOfView = new Dictionary<string, List<GameObjectState>>();
-       
+        tanksToBeRemoved = new List<TankController>();
+
     }
 
     internal GameObject CreatePlayer(PlayerCreate create)
@@ -84,6 +85,15 @@ public class GameSimulation
         return t;
     }
 
+    internal void ClearAllNonPlayerTanks()
+    {
+        foreach (TankController t in tankControllers)
+        {
+            if (t is DummyTank || t is AITankController)
+                tanksToBeRemoved.Add(t);
+        }
+    }
+
     internal GameObject CreateAITank(string color, string name, Vector3 startingPos, bool infiniteHealth, bool infiniteAmmo)
     {
         var t = tankFactory.CreateAITank(color, name, startingPos);
@@ -94,6 +104,14 @@ public class GameSimulation
         t.GetComponent<AITankController>().infiniteHealth = infiniteHealth;
         tankControllers.Add(t.GetComponent<AITankController>());
         return t;
+    }
+
+    internal void ClearAllTanks()
+    {
+        foreach (TankController t in tankControllers)
+        {
+            tanksToBeRemoved.Add(t);
+        }
     }
 
     internal GameObject CreateDummyTank(string color, string name, Vector3 startingPos, bool infiniteHealth, bool infiniteAmmo)
@@ -108,7 +126,7 @@ public class GameSimulation
         return t;
     }
 
-    private Vector3 RandomArenaPosition()
+    internal Vector3 RandomArenaPosition()
     {
         var randomCirclePoint = UnityEngine.Random.insideUnitCircle;
 
@@ -122,6 +140,10 @@ public class GameSimulation
     {
         allObjects.Clear();
 
+
+        foreach (TankController t in tanksToBeRemoved)
+            RemoveTank(t);
+        tanksToBeRemoved.Clear();
 
         if (enqueuedCommands.Count > 0)
         {

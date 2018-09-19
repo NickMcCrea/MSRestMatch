@@ -27,8 +27,8 @@ public class TrainingRoomMain : MonoBehaviour
         //host.Open();
 
 
-        simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank1", new Vector3(0, 0, 30), true, true);
-        simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank2", new Vector3(0, 0, -30), true, true);
+        //simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank1", new Vector3(0, 0, 30), true, true);
+        //simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank2", new Vector3(0, 0, -30), true, true);
 
         //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank1", new Vector3(0, 5, 0), false, true);
         //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank2", new Vector3(30, 5, -30), false, true);
@@ -54,6 +54,34 @@ public class TrainingRoomMain : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (Input.GetKeyUp(KeyCode.Alpha1))
+        {
+            simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank", simulation.RandomArenaPosition(), true, true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha2))
+        {
+            simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank", simulation.RandomArenaPosition(), false, true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha3))
+        {
+            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank", simulation.RandomArenaPosition(), false, true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Backspace))
+        {
+            simulation.ClearAllNonPlayerTanks();
+        }
+
+
+        if (Input.GetKeyUp(KeyCode.Delete))
+        {
+            simulation.ClearAllTanks();
+        }
+
+
 
 
         simulation.Update();

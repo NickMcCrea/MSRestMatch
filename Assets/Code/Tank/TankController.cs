@@ -399,6 +399,12 @@ public class TankController : MonoBehaviour
 
     }
 
+    private void OnDestroy()
+    {
+        GameObject.Destroy(uiLabel);
+    }
+
+
 }
 
 
