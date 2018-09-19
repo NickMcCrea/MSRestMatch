@@ -48,7 +48,17 @@ public class TCPServer
 
     public void Close()
     {
+        
+        foreach(TcpClient c in connectedClients)
+        {
+            if (c.Connected)
+                c.Close();
 
+            c.Dispose();
+        }
+
+        tcpListener.Stop();
+        
     }
 
     private void NewClientConnection(object obj)
