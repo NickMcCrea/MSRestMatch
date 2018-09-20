@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class GameObjectState
 {
-    public string Name { get; set; }
-    public string Type { get; set; }
-    public float X { get; set; }
-    public float Y { get; set; }
-    public float ForwardX { get; set; }
-    public float ForwardY { get; set; }
-    public float Heading { get; set; }
-    public float TurretHeading { get; set; }
-    public float TurretForwardX { get; set; }
-    public float TurretForwardY { get; set; }
+    public string Name;
+    public string Type;
+    public float X;
+    public float Y;
+    public float ForwardX;
+    public float ForwardY;
+    public float Heading;
+    public float TurretHeading;
+    public float TurretForwardX;
+    public float TurretForwardY;
 
-    public int Health { get; set; }
-    public int Ammo { get; set; }
+    public int Health;
+    public int Ammo;
 
     public override string ToString()
     {

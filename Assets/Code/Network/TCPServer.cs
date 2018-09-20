@@ -21,6 +21,7 @@ public class TCPServer
     private GameSimulation sim;
     DateTime ownStateLastUpdate = DateTime.Now;
     DateTime objectStateLastUpdate = DateTime.Now;
+    
 
     public TCPServer(GameSimulation simulation)
     {
@@ -177,7 +178,8 @@ public class TCPServer
                     if (t.Token == client.Client.RemoteEndPoint.ToString())
                     {
                         var obj = new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
-                        SendMessage(client, MessageFactory.CreateObjectUpdateMessage(obj));
+                        var json = JsonUtility.ToJson(obj);
+                        SendMessage(client, MessageFactory.CreateObjectUpdateMessage(json));
                         return;
                     }
                 }
@@ -202,8 +204,11 @@ public class TCPServer
             {
                 var gameObjectsInView = sim.GetObjectsInViewOfTank(client.Client.RemoteEndPoint.ToString());
 
-                foreach(GameObjectState s in gameObjectsInView)
-                    SendMessage(client, MessageFactory.CreateObjectUpdateMessage(s));
+                foreach (GameObjectState s in gameObjectsInView)
+                {
+
+                    SendMessage(client, MessageFactory.CreateObjectUpdateMessage(JsonUtility.ToJson(s)));
+                }
 
 
             }
@@ -297,11 +302,11 @@ public class TCPServer
 public static class MessageFactory
 {
 
-    public static byte[] CreateObjectUpdateMessage(GameObjectState objectState)
+    public static byte[] CreateObjectUpdateMessage(string json)
     {
 
-        string objectStateString = objectState.ToString();
-        byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(objectStateString);
+       
+        byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
         return AddByteStartOfToArray(clientMessageAsByteArray, 12);
 
     }
