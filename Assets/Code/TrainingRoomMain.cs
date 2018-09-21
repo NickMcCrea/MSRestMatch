@@ -7,11 +7,10 @@ using UnityEngine;
 
 public class TrainingRoomMain : MonoBehaviour
 {
-
-
-    //WebServiceHost host;
+    
     GameSimulation simulation;
     TCPServer server;
+
     // Use this for initialization
     void Start()
     {
@@ -19,12 +18,6 @@ public class TrainingRoomMain : MonoBehaviour
         ruleSet.TrainingMode = true;
         simulation = new GameSimulation(ruleSet);
 
-        //var service = new Service(simulation);
-        //host = new WebServiceHost(service, new Uri("http://localhost:8000/"));
-        //var behaviour = host.Description.Behaviors.Find<ServiceBehaviorAttribute>();
-        //behaviour.InstanceContextMode = InstanceContextMode.Single;
-        //var ep = host.AddServiceEndpoint(typeof(IService), new WebHttpBinding(), "");
-        //host.Open();
 
 
         //simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank1", new Vector3(0, 0, 30), true, true);

@@ -72,7 +72,7 @@ public class TankController : MonoBehaviour
         turret = root.transform.Find("top").gameObject;
         barrel = turret.transform.Find("barrel").gameObject;
         firingPoint = barrel.transform.Find("firingpoint").gameObject;
-        
+
         uiLabel = Instantiate(Resources.Load("Prefabs/TextLabel")) as UnityEngine.GameObject;
 
         uiLabel.GetComponent<TextMeshPro>().text = Name;
@@ -96,7 +96,7 @@ public class TankController : MonoBehaviour
     // Update is called once per frame
     public virtual void Update()
     {
-   
+
 
         ManageProjectiles();
 
@@ -131,8 +131,10 @@ public class TankController : MonoBehaviour
 
         if (Camera.current != null)
         {
-            uiLabel.transform.position = new Vector3(transform.position.x, 10, transform.position.z);
-            uiLabel.transform.LookAt( uiLabel.transform.position- Camera.current.transform.position);
+            var pos = new Vector3(transform.position.x, 10, transform.position.z);
+
+            Quaternion labelRotation = Quaternion.LookRotation(pos - Camera.current.transform.position, Camera.current.transform.up);
+            uiLabel.transform.SetPositionAndRotation(pos, labelRotation);
         }
 
         X = transform.position.x;
