@@ -346,22 +346,43 @@ public class TankController : MonoBehaviour
         }
         else
             Console.WriteLine("Root ref fixed");
-        root.GetComponent<Rigidbody>().AddForce(root.transform.forward * tankMovementForce);
+
+        if (transform.position.y > -1.75f)
+            return;
+
+        //root.GetComponent<Rigidbody>().AddForce(root.transform.forward * tankMovementForce);
+
+        root.GetComponent<Rigidbody>().MovePosition(root.transform.position + root.transform.forward * Time.deltaTime * 5);
     }
     public void Reverse()
     {
-        root.GetComponent<Rigidbody>().AddForce(-root.transform.forward * tankMovementForce);
+        if (transform.position.y > -1.75f)
+            return;
+        //root.GetComponent<Rigidbody>().AddForce(-root.transform.forward * tankMovementForce);
+        root.GetComponent<Rigidbody>().MovePosition(root.transform.position - root.transform.forward * Time.deltaTime * 5);
+
+
     }
 
     public void TurnRight()
     {
-        //root.transform.Rotate(Vector3.up, rotateSpeed * Time.deltaTime);
-        root.GetComponent<Rigidbody>().AddTorque(root.transform.up * torqueForce);
+        if (transform.position.y > -1.75f)
+            return;
+        root.transform.Rotate(Vector3.up, 100 * Time.deltaTime);
+        //root.GetComponent<Rigidbody>().AddTorque(root.transform.up * torqueForce);
+
+        
     }
 
     public void TurnLeft()
     {
-        root.GetComponent<Rigidbody>().AddTorque(root.transform.up * -torqueForce);
+        if (transform.position.y > -1.75f)
+            return;
+
+        root.transform.Rotate(Vector3.up, -100 * Time.deltaTime);
+        //root.GetComponent<Rigidbody>().AddTorque(root.transform.up * -torqueForce);
+
+
     }
 
     public void TurretLeft()
