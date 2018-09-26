@@ -5,11 +5,18 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using UnityEngine;
 
+public static class GameFlags
+{
+
+    public static bool BasicTank = true;
+}
+
 public class TrainingRoomMain : MonoBehaviour
 {
     
     GameSimulation simulation;
     TCPServer server;
+
 
     // Use this for initialization
     void Start()

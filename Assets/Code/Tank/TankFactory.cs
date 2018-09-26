@@ -16,6 +16,9 @@ public class TankFactory : MonoBehaviour
 
     public GameObject CreateTank(string mainColor, string name, string token, Vector3 startingPosition)
     {
+
+
+
         var tank = CreateTank<TankController>(mainColor);
 
         // PlaceTankAtSpawnPoint(tank, "SpawnPoint " + spawnPoint.ToString());
@@ -80,9 +83,20 @@ public class TankFactory : MonoBehaviour
 
     private GameObject CreateTank<T>(string tankColor)
     {
-        var tank = Instantiate(Resources.Load("Prefabs/ToyTank")) as UnityEngine.GameObject;
-        tank.AddComponent(typeof(T));
-        SetTankColor(tank, tankColor);
+
+        GameObject tank;
+        if (GameFlags.BasicTank)
+        {
+            tank = Instantiate(Resources.Load("Prefabs/ToyTank")) as UnityEngine.GameObject;
+            tank.AddComponent(typeof(T));
+            SetTankColor(tank, tankColor);
+        }
+        else
+        {
+            tank = Instantiate(Resources.Load("Prefabs/Tank1")) as UnityEngine.GameObject;
+            tank.AddComponent(typeof(T));
+        }
+
         return tank;
     }
 

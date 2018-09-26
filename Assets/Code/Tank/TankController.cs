@@ -371,7 +371,7 @@ public class TankController : MonoBehaviour
         root.transform.Rotate(Vector3.up, 100 * Time.deltaTime);
         //root.GetComponent<Rigidbody>().AddTorque(root.transform.up * torqueForce);
 
-        
+
     }
 
     public void TurnLeft()
@@ -387,11 +387,17 @@ public class TankController : MonoBehaviour
 
     public void TurretLeft()
     {
-        turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
+        if (GameFlags.BasicTank)
+            turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
+        else
+            turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
     }
     public void TurretRight()
     {
-        turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
+        if (GameFlags.BasicTank)
+            turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
+        else
+            turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
     }
 
     public void Fire()
@@ -414,7 +420,14 @@ public class TankController : MonoBehaviour
         projectile.GetComponent<TrailRenderer>().endColor = mainTankColor;
 
 
-        projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
+        if (GameFlags.BasicTank)
+            projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
+        else
+        {
+            projectile.GetComponent<Rigidbody>().AddForce(-barrel.transform.up * projectileForce);
+        }
+
+
         Ammo--;
         projectiles.Add(projectile, lastFireTime);
 
