@@ -93,7 +93,7 @@ public class TankFactory : MonoBehaviour
         }
         else
         {
-            int randomTank = new System.Random().Next(1, 7);
+            int randomTank = new System.Random().Next(1, 11);
 
             tank = Instantiate(Resources.Load("Prefabs/Tanks/Tank"+randomTank)) as UnityEngine.GameObject;
 
