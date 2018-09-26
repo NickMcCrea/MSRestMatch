@@ -336,9 +336,6 @@
     <Compile Include="Assets\Code\Tank\TankController.cs" />
     <Compile Include="Assets\Code\Tank\TankFactory.cs" />
     <Compile Include="Assets\Code\TrainingRoomMain.cs" />
-    <Compile Include="Assets\Mini PBR Assets\Tanks\Example\Scripts\AnimateMeshUvPosition.cs" />
-    <Compile Include="Assets\Mini PBR Assets\Tanks\Example\Scripts\AnimateSkinnedMeshUvPosition.cs" />
-    <Compile Include="Assets\Mini PBR Assets\Tanks\Example\Scripts\AnimateTexturePosition.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
