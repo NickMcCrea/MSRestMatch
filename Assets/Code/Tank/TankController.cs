@@ -416,15 +416,20 @@ public class TankController : MonoBehaviour
         projectile.GetComponent<TrailRenderer>().enabled = true;
         projectile.GetComponent<TrailRenderer>().Clear();
 
-        projectile.GetComponent<TrailRenderer>().startColor = mainTankColor;
-        projectile.GetComponent<TrailRenderer>().endColor = mainTankColor;
+
 
 
         if (GameFlags.BasicTank)
+        {
             projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
+            projectile.GetComponent<TrailRenderer>().startColor = mainTankColor;
+            projectile.GetComponent<TrailRenderer>().endColor = mainTankColor;
+        }
         else
         {
             projectile.GetComponent<Rigidbody>().AddForce(-barrel.transform.up * projectileForce);
+            projectile.GetComponent<TrailRenderer>().startColor = Color.blue;
+            projectile.GetComponent<TrailRenderer>().endColor = Color.blue;
         }
 
 

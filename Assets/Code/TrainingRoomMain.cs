@@ -8,7 +8,7 @@ using UnityEngine;
 public static class GameFlags
 {
 
-    public static bool BasicTank = true;
+    public static bool BasicTank = false;
 }
 
 public class TrainingRoomMain : MonoBehaviour
