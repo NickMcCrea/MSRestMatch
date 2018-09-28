@@ -38,12 +38,19 @@ public class TCPServer
         tcpListener = new TcpListener(IPAddress.Parse(ipAddress), port);
         tcpListener.Start();
 
-
+        
         while (listening)
         {
-            var client = tcpListener.AcceptTcpClient();
-            ThreadPool.QueueUserWorkItem(NewClientConnection, client);
-            Thread.Sleep(16);
+            try
+            {
+                var client = tcpListener.AcceptTcpClient();
+                ThreadPool.QueueUserWorkItem(NewClientConnection, client);
+                Thread.Sleep(16);
+            }
+            catch(Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
     }
 
@@ -245,7 +252,7 @@ public class TCPServer
                     {
 
                         Type = CommandType.PlayerCreate,
-                        Payload = new PlayerCreate() { Name = messageData.name, Token = clientId, Color = messageData.color },
+                        Payload = new PlayerCreate() { Name = messageData.Name, Token = clientId, Color = "" },
                         Token = clientId
                     });
 
@@ -308,7 +315,6 @@ public static class MessageFactory
     public static byte[] CreateObjectUpdateMessage(string json)
     {
 
-       
         byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
         return AddByteStartOfToArray(clientMessageAsByteArray, 12);
 
@@ -337,8 +343,8 @@ public struct NetworkMessage
 
 public struct CreatePlayer
 {
-    public string name;
-    public string color;
+    public string Name;
+   
 }
 
 
