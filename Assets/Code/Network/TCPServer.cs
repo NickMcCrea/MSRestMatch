@@ -227,7 +227,7 @@ public class TCPServer
 
             string clientId = newMessage.sender.Client.RemoteEndPoint.ToString();
 
-            var arguments = ((string)newMessage.data).Split(':');
+           
 
             switch (newMessage.type)
             {
@@ -239,11 +239,14 @@ public class TCPServer
 
                 case (NetworkMessageType.createTank):
 
+                    CreatePlayer messageData = JsonUtility.FromJson<CreatePlayer>((string)newMessage.data);
+
                     sim.enqueuedCommands.Enqueue(new GameCommand()
                     {
+
                         Type = CommandType.PlayerCreate,
-                        Payload = new PlayerCreate() { Name = arguments[0], Token = clientId, Color = arguments[1] },
-                        Token = arguments[1]
+                        Payload = new PlayerCreate() { Name = messageData.name, Token = clientId, Color = messageData.color },
+                        Token = clientId
                     });
 
                     break;
@@ -330,6 +333,12 @@ public struct NetworkMessage
     public NetworkMessageType type;
     public object data;
     public TcpClient sender;
+}
+
+public struct CreatePlayer
+{
+    public string name;
+    public string color;
 }
 
 
