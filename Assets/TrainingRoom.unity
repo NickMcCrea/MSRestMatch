@@ -640,6 +640,7 @@ GameObject:
   - component: {fileID: 1207040349}
   - component: {fileID: 1207040348}
   - component: {fileID: 1207040350}
+  - component: {fileID: 1207040351}
   m_Layer: 0
   m_Name: CameraRig
   m_TagString: Untagged
@@ -653,7 +654,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1207040347}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce707ec2763ced44f927ebcc4f6faad3, type: 3}
   m_Name: 
@@ -684,6 +685,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d3a4558442e9644fb54ef04b43893ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1207040351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1207040347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05e06af6aea4df4982056c4d750a644, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentCameraMode: 1
 --- !u!1 &1212004121
 GameObject:
   m_ObjectHideFlags: 0

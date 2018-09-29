@@ -16,7 +16,7 @@ public class TrainingRoomMain : MonoBehaviour
     
     GameSimulation simulation;
     TCPServer server;
-
+    StadiumCam cam;
 
     // Use this for initialization
     void Start()
@@ -38,6 +38,8 @@ public class TrainingRoomMain : MonoBehaviour
         //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank6", new Vector3(-30, 5, -30), false, true);
 
         server = new TCPServer(simulation);
+
+        cam = GameObject.Find("CameraRig").GetComponent<StadiumCam>();
     }
 
     private void OnApplicationQuit()
@@ -54,6 +56,10 @@ public class TrainingRoomMain : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+
+        if (simulation.tankControllers.Count == 0)
+            cam.Left(0.1f);
 
         if (Input.GetKeyUp(KeyCode.Alpha1))
         {
