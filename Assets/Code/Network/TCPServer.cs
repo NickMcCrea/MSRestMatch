@@ -240,7 +240,8 @@ public class TCPServer
         {
             Debug.Log(newMessage.type + " - " + (string)newMessage.data);
 
-            string clientId = newMessage.sender.Client.RemoteEndPoint.ToString();
+            //make the id of the tank the IP address of the client
+            string clientId = newMessage.sender.Client.RemoteEndPoint.ToString().Split(':')[0];
 
            
 

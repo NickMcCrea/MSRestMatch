@@ -58,6 +58,12 @@ public class GameSimulation
 
         //TODO - check starting point for obstacles. Don't start too close to other tanks
 
+        //already exists. Ignore.
+        if(FindTankObject(create.Token) != null)
+        {
+            return null;
+        }
+
 
         var t = tankFactory.CreateTank(create.Color, create.Name, create.Token, potentialStartPoint);
         //randomly rotate the tank
