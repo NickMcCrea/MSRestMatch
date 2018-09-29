@@ -33,6 +33,8 @@ public class TCPServer
         networkThread.Start();
     }
 
+    
+
     private void StartServer()
     {
         tcpListener = new TcpListener(IPAddress.Parse(ipAddress), port);
@@ -51,6 +53,7 @@ public class TCPServer
             {
                 Debug.LogException(ex);
             }
+
         }
     }
 
@@ -66,6 +69,8 @@ public class TCPServer
         }
 
         tcpListener.Stop();
+        listening = false;
+       
         
     }
 
@@ -90,6 +95,9 @@ public class TCPServer
                 while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
                 {
                     DecodeMessage(client, (NetworkMessageType)bytes[0], bytes, length);
+
+                    if (!listening)
+                        return;
                 }
             }
         }
