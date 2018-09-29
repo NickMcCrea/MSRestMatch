@@ -241,6 +241,9 @@ public class TCPServer
 
                 case (NetworkMessageType.test):
 
+                    byte[] testReturn = new byte[1];
+                    testReturn[0] = 0;
+                    newMessage.sender.Client.Send(testReturn);
                     break;
 
 
