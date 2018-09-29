@@ -190,7 +190,7 @@ public class TCPServer
             {
                 foreach (TankController t in sim.tankControllers)
                 {
-                    if (t.Token == client.Client.RemoteEndPoint.ToString())
+                    if (t.Token == client.Client.RemoteEndPoint.ToString().Split(':')[0])
                     {
                         var obj = new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
                         var json = JsonUtility.ToJson(obj);
@@ -326,8 +326,9 @@ public static class MessageFactory
 
     public static byte[] CreateObjectUpdateMessage(string json)
     {
-
+        Debug.Log(json);
         byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
+        Debug.Log(clientMessageAsByteArray.Length);
         return AddByteStartOfToArray(clientMessageAsByteArray, 12);
 
     }
