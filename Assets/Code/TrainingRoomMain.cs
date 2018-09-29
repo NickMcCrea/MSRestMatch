@@ -59,7 +59,11 @@ public class TrainingRoomMain : MonoBehaviour
 
 
         if (simulation.tankControllers.Count == 0)
+        {
             cam.Left(0.1f);
+            if (cam.transform.position.magnitude < 250)
+                cam.ZoomOut();
+        }
 
         if (Input.GetKeyUp(KeyCode.Alpha1))
         {
