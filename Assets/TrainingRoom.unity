@@ -1140,7 +1140,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e05e06af6aea4df4982056c4d750a644, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentCameraMode: 1
 --- !u!1 &1212004121
 GameObject:
   m_ObjectHideFlags: 0
@@ -1398,7 +1397,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.23408285, g: 0.049956735, b: 0.9705882, a: 1}
+  m_Color: {r: 0.7794118, g: 0.7794118, b: 0.7794118, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:

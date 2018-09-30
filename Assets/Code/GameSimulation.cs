@@ -39,6 +39,8 @@ public class GameSimulation
     private List<GameObject> healthPickupsToRemove;
     private List<GameObject> ammoPickupsToRemove;
 
+    GameObject snitch;
+
     public float fov = 50;
     public float maxdistance = 100;
     private float arenaSize = 80f;
@@ -237,7 +239,23 @@ public class GameSimulation
             {
                 SpawnAmmoPickup();
             }
+
+            if(TrainingRoomMain.timeLeft.TotalSeconds < 120)
+            {
+                if(snitch == null && GameFlags.SnitchEnabled)
+                {
+                    SpawnSnitch();
+                }
+            }
         }
+
+
+    }
+
+    private void SpawnSnitch()
+    {
+        snitch = GameObject.Instantiate(Resources.Load("Prefabs/Snitch")) as UnityEngine.GameObject;
+        snitch.transform.position = RandomArenaPosition();
     }
 
     private void HandlePickupLogic()

@@ -31,6 +31,7 @@ public class TrainingRoomMain : MonoBehaviour
     StadiumCam cam;
     int aiTankCount = 0;
     int dummyTankCount = 0;
+    public static TimeSpan timeLeft;
 
     Text scoreBoard;
     Text timer;
@@ -55,7 +56,7 @@ public class TrainingRoomMain : MonoBehaviour
         scoreBoard = GameObject.Find("Scoreboard").GetComponent<Text>();
         timer = GameObject.Find("Timer").GetComponent<Text>();
 
-        gameDuration = new TimeSpan(0, 0, 15);
+        gameDuration = new TimeSpan(0, 3, 0);
 
         timer.text = string.Format("{0:hh\\:mm\\:ss}", gameDuration);
 
@@ -175,11 +176,11 @@ public class TrainingRoomMain : MonoBehaviour
         if (TrainingRoomMain.currentGameState == GameState.playing)
         {
             TimeSpan timeSinceStart = DateTime.Now - gameStart;
-            var timerTimeSpan = gameDuration - timeSinceStart;
+            timeLeft = gameDuration - timeSinceStart;
 
-            timer.text = string.Format("{0:hh\\:mm\\:ss}", timerTimeSpan);
+            timer.text = string.Format("{0:hh\\:mm\\:ss}", timeLeft);
 
-            if (timerTimeSpan.TotalSeconds < 30)
+            if (timeLeft.TotalSeconds < 30)
                 timer.color = Color.red;
             else
                 timer.color = Color.white;
