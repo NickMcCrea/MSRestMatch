@@ -228,7 +228,7 @@ public class TCPServer
 
             if (client.Connected)
             {
-                var gameObjectsInView = sim.GetObjectsInViewOfTank(client.Client.RemoteEndPoint.ToString());
+                var gameObjectsInView = sim.GetObjectsInViewOfTank(client.Client.RemoteEndPoint.ToString().Split(':')[0]);
 
                 foreach (GameObjectState s in gameObjectsInView)
                 {

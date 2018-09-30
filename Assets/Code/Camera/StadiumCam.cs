@@ -10,7 +10,7 @@ public class StadiumCam : MonoBehaviour
     private GameObject currentTarget;
     private Vector3 targetPoint;
 
-    private float rotationSpeed = 0.1f;
+    private float rotationSpeed = 0.3f;
     private float zoomDistance = 0.1f;
     private float zoomChange;
     private Vector3 desiredPosition;
@@ -57,6 +57,12 @@ public class StadiumCam : MonoBehaviour
         if (Input.GetKey(KeyCode.DownArrow))
             ZoomOut();
 
+
+        if (Input.GetKey(KeyCode.RightShift))
+            Up();
+
+        if (Input.GetKey(KeyCode.RightControl))
+            Down();
 
         Vector3 toTarget = targetPoint - transform.position;
         toTarget.Normalize();
@@ -109,12 +115,12 @@ public class StadiumCam : MonoBehaviour
 
     public void Up()
     {
-
+        transform.RotateAround(targetPoint, transform.right, rotationSpeed);
     }
 
     public void Down()
     {
-
+        transform.RotateAround(targetPoint, transform.right, -rotationSpeed);
     }
 
     public void ZoomIn()
@@ -126,5 +132,15 @@ public class StadiumCam : MonoBehaviour
     public void ZoomOut()
     {
         zoomChange -= zoomDistance;
+    }
+
+    public void ZoomIn(float amount)
+    {
+        zoomChange += amount;
+    }
+
+    public void ZoomOut(float amount)
+    {
+        zoomChange -= amount;
     }
 }

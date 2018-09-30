@@ -17,6 +17,9 @@ public class TrainingRoomMain : MonoBehaviour
     GameSimulation simulation;
     TCPServer server;
     StadiumCam cam;
+    int aiTankCount = 0;
+    int dummyTankCount = 0;
+    private bool playMode = false;
 
     // Use this for initialization
     void Start()
@@ -29,6 +32,7 @@ public class TrainingRoomMain : MonoBehaviour
         server = new TCPServer(simulation);
 
         cam = GameObject.Find("CameraRig").GetComponent<StadiumCam>();
+
     }
 
     private void OnApplicationQuit()
@@ -46,13 +50,34 @@ public class TrainingRoomMain : MonoBehaviour
     void Update()
     {
 
-
         if (simulation.tankControllers.Count == 0)
         {
+            GameObject.Find("MainLogo").GetComponent<Fade>().FadeIn(0.8f);
+
             cam.Left(0.1f);
             if (cam.transform.position.magnitude < 250)
                 cam.ZoomOut();
+
+            if (playMode)
+            {
+                GameStop();
+            }
         }
+        else
+        {
+            if (!playMode)
+            {
+                GameStart();
+            }
+        }
+
+        if (Input.mouseScrollDelta.y < 0)
+        {
+            cam.ZoomOut(1f);
+
+        }
+        if (Input.mouseScrollDelta.y > 0)
+            cam.ZoomIn(1f);
 
         if (Input.GetKeyDown(KeyCode.LeftBracket))
         {
@@ -70,17 +95,20 @@ public class TrainingRoomMain : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Alpha1))
         {
-            simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank", simulation.RandomArenaPosition(), true, true);
+            dummyTankCount++;
+            simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank" + dummyTankCount, simulation.RandomArenaPosition(), true, true);
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha2))
         {
-            simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank", simulation.RandomArenaPosition(), false, true);
+            dummyTankCount++;
+            simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank" + dummyTankCount, simulation.RandomArenaPosition(), false, true);
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
-            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank", simulation.RandomArenaPosition(), false, true);
+            aiTankCount++;
+            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, true);
         }
 
         if (Input.GetKeyUp(KeyCode.Backspace))
@@ -101,5 +129,17 @@ public class TrainingRoomMain : MonoBehaviour
         server.Update();
     }
 
+    private void GameStop()
+    {
+        cam.SetTargetFollowMode(simulation.GetNextTank());
+        playMode = false;
+        GameObject.Find("MainLogo").GetComponent<Fade>().FadeIn(0.8f);
+    }
 
+    private void GameStart()
+    {
+        cam.SetTargetFollowMode(simulation.GetNextTank());
+        playMode = true;
+        GameObject.Find("MainLogo").GetComponent<Fade>().FadeOut(2f);
+    }
 }

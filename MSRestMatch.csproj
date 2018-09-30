@@ -326,6 +326,7 @@
     <Compile Include="Assets\Code\GameCommand.cs" />
     <Compile Include="Assets\Code\GameRestServer.cs" />
     <Compile Include="Assets\Code\GameSimulation.cs" />
+    <Compile Include="Assets\Code\Helper\Fade.cs" />
     <Compile Include="Assets\Code\MainMenu.cs" />
     <Compile Include="Assets\Code\Network\TCPServer.cs" />
     <Compile Include="Assets\Code\Player.cs" />
