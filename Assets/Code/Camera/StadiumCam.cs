@@ -6,7 +6,7 @@ using UnityEngine;
 public class StadiumCam : MonoBehaviour
 {
 
-    public CameraMode currentCameraMode;
+    private CameraMode currentCameraMode = CameraMode.centerCircle;
     private GameObject currentTarget;
     private Vector3 targetPoint;
 
@@ -18,14 +18,15 @@ public class StadiumCam : MonoBehaviour
     public enum CameraMode
     {
         targetTrack,
-        centerCircle
+        centerCircle,
+        leaderboard
     }
 
     // Use this for initialization
     void Start()
     {
 
-        currentCameraMode = CameraMode.centerCircle;
+      
         targetPoint = Vector3.zero;
 
         zoomChange = 0;
@@ -38,15 +39,21 @@ public class StadiumCam : MonoBehaviour
 
         if (currentCameraMode == CameraMode.centerCircle)
             targetPoint = Vector3.zero;
-        else
-        {
-            targetPoint = currentTarget.transform.position;
-        }
 
+        if (currentCameraMode == CameraMode.targetTrack)
+        {
+            if (currentTarget != null)
+                targetPoint = currentTarget.transform.position;
+        }
+        if (currentCameraMode == CameraMode.leaderboard)
+        {
+            if (currentTarget != null)
+                targetPoint = currentTarget.transform.position;
+        }
 
         if (Input.GetKey(KeyCode.Tab))
         {
-            targetPoint = GameObject.Find("ScoreboardCanvas").transform.position;
+            LookAtLeaderBoard();
         }
 
         if (Input.GetKey(KeyCode.LeftArrow))
@@ -78,7 +85,7 @@ public class StadiumCam : MonoBehaviour
         zoomChange *= 0.9f;
 
         Vector3 lTargetDir = targetPoint - transform.position;
-     
+
         transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(lTargetDir), Time.time * 0.1f);
 
     }
@@ -87,16 +94,21 @@ public class StadiumCam : MonoBehaviour
     {
         currentCameraMode = CameraMode.targetTrack;
         currentTarget = newTarget;
-        
-       
+        Debug.Log("Cam: Follow mode");
+
     }
 
     public void SetCenterCircleMode()
     {
         currentCameraMode = CameraMode.centerCircle;
-       
+        Debug.Log("Cam: Circle mode");
+
     }
 
+    public void LookAtLeaderBoard()
+    {
+        targetPoint = GameObject.Find("ScoreboardCanvas").transform.position;
+    }
 
     public void Right()
     {
@@ -147,5 +159,12 @@ public class StadiumCam : MonoBehaviour
     public void ZoomOut(float amount)
     {
         zoomChange -= amount;
+    }
+
+    internal void SetLeaderBoardMode()
+    {
+        currentTarget = GameObject.Find("ScoreboardCanvas");
+        currentCameraMode = CameraMode.leaderboard;
+        Debug.Log("Cam: Leaderboard mode");
     }
 }

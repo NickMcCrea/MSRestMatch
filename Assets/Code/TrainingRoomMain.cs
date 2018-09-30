@@ -11,20 +11,34 @@ using System.Text;
 public static class GameFlags
 {
 
-    public static bool BasicTank = false;
+    public static bool KillCaptureMode = true;
+    public static bool SnitchEnabled = true;
 }
 
 public class TrainingRoomMain : MonoBehaviour
 {
 
+    public enum GameState
+    {
+        notStarted,
+        playing,
+        gameOver
+    }
+
+    public static GameState currentGameState = GameState.notStarted;
     GameSimulation simulation;
     TCPServer server;
     StadiumCam cam;
     int aiTankCount = 0;
     int dummyTankCount = 0;
-    private bool playMode = false;
+
     Text scoreBoard;
+    Text timer;
     DateTime scoreRefreshTime;
+
+    DateTime gameStart;
+    TimeSpan gameDuration;
+
 
     // Use this for initialization
     void Start()
@@ -39,7 +53,11 @@ public class TrainingRoomMain : MonoBehaviour
         cam = GameObject.Find("CameraRig").GetComponent<StadiumCam>();
 
         scoreBoard = GameObject.Find("Scoreboard").GetComponent<Text>();
+        timer = GameObject.Find("Timer").GetComponent<Text>();
 
+        gameDuration = new TimeSpan(0, 0, 15);
+
+        timer.text = string.Format("{0:hh\\:mm\\:ss}", gameDuration);
 
         scoreRefreshTime = DateTime.Now;
 
@@ -60,26 +78,33 @@ public class TrainingRoomMain : MonoBehaviour
     void Update()
     {
 
-        if (simulation.tankControllers.Count == 0)
-        {
-            GameObject.Find("MainLogo").GetComponent<Fade>().FadeIn(0.8f);
 
+
+        if (currentGameState == GameState.notStarted)
+        {
+
+            GameObject.Find("MainLogo").GetComponent<Fade>().FadeIn(0.8f);
             cam.Left(0.1f);
+
             if (cam.transform.position.magnitude < 250)
                 cam.ZoomOut();
 
-            if (playMode)
-            {
-                GameStop();
-            }
         }
-        else
+
+
+        if (currentGameState == GameState.notStarted)
         {
-            if (!playMode)
-            {
+            if (Input.GetKeyUp(KeyCode.Space))
                 GameStart();
-            }
         }
+
+        if (currentGameState == GameState.gameOver)
+        {
+            if (Input.GetKeyUp(KeyCode.Space))
+                GamePrep();
+        }
+
+
 
         if (Input.mouseScrollDelta.y < 0)
         {
@@ -105,18 +130,26 @@ public class TrainingRoomMain : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Alpha1))
         {
+            if (currentGameState == GameState.notStarted)
+                GameStart();
+
             dummyTankCount++;
             simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank" + dummyTankCount, simulation.RandomArenaPosition(), true, true);
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha2))
         {
+            if (currentGameState == GameState.notStarted)
+                GameStart();
             dummyTankCount++;
             simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank" + dummyTankCount, simulation.RandomArenaPosition(), false, true);
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
+            if (currentGameState == GameState.notStarted)
+                GameStart();
+
             aiTankCount++;
             simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, false);
         }
@@ -130,14 +163,35 @@ public class TrainingRoomMain : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Delete))
         {
             simulation.ClearAllTanks();
+            GamePrep();
         }
 
-
-
-        if((DateTime.Now - scoreRefreshTime).TotalSeconds > 5)
+        if ((DateTime.Now - scoreRefreshTime).TotalSeconds > 5)
         {
             RefreshScores();
         }
+
+
+        if (TrainingRoomMain.currentGameState == GameState.playing)
+        {
+            TimeSpan timeSinceStart = DateTime.Now - gameStart;
+            var timerTimeSpan = gameDuration - timeSinceStart;
+
+            timer.text = string.Format("{0:hh\\:mm\\:ss}", timerTimeSpan);
+
+            if (timerTimeSpan.TotalSeconds < 30)
+                timer.color = Color.red;
+            else
+                timer.color = Color.white;
+
+            if (timeSinceStart > gameDuration)
+            {
+                GameOver();
+            }
+
+
+        }
+
 
         simulation.Update();
         server.Update();
@@ -164,19 +218,28 @@ public class TrainingRoomMain : MonoBehaviour
         scoreRefreshTime = DateTime.Now;
     }
 
-    private void GameStop()
+    private void GameOver()
     {
-        simulation.GameInProgress = false;
-        cam.SetTargetFollowMode(simulation.GetNextTank());
-        playMode = false;
+        currentGameState = GameState.gameOver;
+        cam.SetLeaderBoardMode();
+        Debug.Log("GAME OVER");
+
+    }
+
+    private void GamePrep()
+    {
+        simulation.ClearAllTanks();
+        currentGameState = GameState.notStarted;
+        cam.SetCenterCircleMode();
         GameObject.Find("MainLogo").GetComponent<Fade>().FadeIn(0.8f);
+        Debug.Log("GAME PREP");
     }
 
     private void GameStart()
     {
-        simulation.GameInProgress = true;
-        cam.SetTargetFollowMode(simulation.GetNextTank());
-        playMode = true;
+        currentGameState = GameState.playing;
+        gameStart = DateTime.Now;
         GameObject.Find("MainLogo").GetComponent<Fade>().FadeOut(2f);
+        Debug.Log("GAME START");
     }
 }

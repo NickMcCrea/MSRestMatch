@@ -29,26 +29,21 @@ public class TankController : MonoBehaviour
     public string Token;
     public string Name;
     public int Points;
-    public UnityEngine.GameObject root;
-    public UnityEngine.GameObject turret;
-    public UnityEngine.GameObject barrel;
-    public UnityEngine.GameObject firingPoint;
+    public int UnbankedPoints;
+    public GameObject root;
+    public GameObject turret;
+    public GameObject barrel;
+    public GameObject firingPoint;
     private float barrelRotateSpeed = 0.5f;
     private float reorientateSpeed = 10f;
     private DateTime lastFireTime = DateTime.Now;
     private float fireInterval = 2;
-
     private float projectileForce = 2000;
-    private float tankMovementForce = 15f;
-    private float torqueForce = 35f;
-
     private int projectileLifetime = 4;
     private DateTime destroyTime;
     private readonly int startingHealth = 10;
     private readonly int startingAmmo = 10;
-
-    private Dictionary<UnityEngine.GameObject, DateTime> projectiles;
-
+    private Dictionary<GameObject, DateTime> projectiles;
     private bool toggleForward;
     private bool toggleReverse;
     private bool toggleLeft;
@@ -60,7 +55,6 @@ public class TankController : MonoBehaviour
     public GameSimulation Sim { get; internal set; }
     public int Deaths { get; internal set; }
     GameObject uiLabel;
-
     AudioSource fireSound;
     AudioSource shellHit;
     AudioSource tankExplosion;
@@ -321,7 +315,6 @@ public class TankController : MonoBehaviour
         toggleTurretLeft = true;
         toggleTurretRight = false;
     }
-
     public void Stop()
     {
         toggleForward = false;
@@ -334,9 +327,6 @@ public class TankController : MonoBehaviour
         toggleTurretLeft = false;
         toggleTurretRight = false;
     }
-
-
-
     public void Forward()
     {
         if (root == null)
@@ -350,7 +340,6 @@ public class TankController : MonoBehaviour
         if (transform.position.y > -1.75f)
             return;
 
-        //root.GetComponent<Rigidbody>().AddForce(root.transform.forward * tankMovementForce);
 
         root.GetComponent<Rigidbody>().MovePosition(root.transform.position + root.transform.forward * Time.deltaTime * 5);
     }
@@ -363,17 +352,14 @@ public class TankController : MonoBehaviour
 
 
     }
-
     public void TurnRight()
     {
         if (transform.position.y > -1.75f)
             return;
         root.transform.Rotate(Vector3.up, 100 * Time.deltaTime);
-        //root.GetComponent<Rigidbody>().AddTorque(root.transform.up * torqueForce);
-
+       
 
     }
-
     public void TurnLeft()
     {
         if (transform.position.y > -1.75f)
@@ -384,20 +370,14 @@ public class TankController : MonoBehaviour
 
 
     }
-
     public void TurretLeft()
     {
-        if (GameFlags.BasicTank)
-            turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
-        else
-            turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
+        turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
     }
     public void TurretRight()
     {
-        if (GameFlags.BasicTank)
-            turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
-        else
-            turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
+
+        turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
     }
 
     public void Fire()
@@ -417,20 +397,10 @@ public class TankController : MonoBehaviour
         projectile.GetComponent<TrailRenderer>().Clear();
 
 
+        projectile.GetComponent<Rigidbody>().AddForce(-barrel.transform.up * projectileForce);
+        projectile.GetComponent<TrailRenderer>().startColor = Color.blue;
+        projectile.GetComponent<TrailRenderer>().endColor = Color.blue;
 
-
-        if (GameFlags.BasicTank)
-        {
-            projectile.GetComponent<Rigidbody>().AddForce(barrel.transform.up * projectileForce);
-            projectile.GetComponent<TrailRenderer>().startColor = mainTankColor;
-            projectile.GetComponent<TrailRenderer>().endColor = mainTankColor;
-        }
-        else
-        {
-            projectile.GetComponent<Rigidbody>().AddForce(-barrel.transform.up * projectileForce);
-            projectile.GetComponent<TrailRenderer>().startColor = Color.blue;
-            projectile.GetComponent<TrailRenderer>().endColor = Color.blue;
-        }
 
 
         Ammo--;
@@ -443,6 +413,15 @@ public class TankController : MonoBehaviour
     private void OnDestroy()
     {
         GameObject.Destroy(uiLabel);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.name == "GoalA" || other.gameObject.name == "GoalB")
+        {
+            Points += UnbankedPoints;
+            UnbankedPoints = 0;
+        }
     }
 
 

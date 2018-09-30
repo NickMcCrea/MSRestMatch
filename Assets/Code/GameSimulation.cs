@@ -42,8 +42,7 @@ public class GameSimulation
     public float fov = 50;
     public float maxdistance = 100;
     private float arenaSize = 80f;
-
-    public bool GameInProgress { get; set; }
+    
 
     public GameSimulation(GameSimRules ruleset)
     {
@@ -227,7 +226,7 @@ public class GameSimulation
         }
 
         int pickupCount = 2;
-        if (GameInProgress)
+        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.playing)
         {
 
             if (healthPickups.Count < pickupCount)
@@ -404,7 +403,11 @@ public class GameSimulation
     {
         Debug.Log(victim.Name + " killed by " + killer.Name);
         victim.Deaths++;
-        killer.Points++;
+
+        if (GameFlags.KillCaptureMode)
+            killer.UnbankedPoints++;
+        else
+            killer.Points++;
 
     }
 
@@ -426,7 +429,10 @@ public class GameSimulation
     {
         TankController t = FindTankObject(command.Token);
 
-        if (!GameInProgress)
+        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.gameOver)
+            return;
+
+        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.notStarted)
             if (command.Type != CommandType.PlayerCreate)
                 return;
 

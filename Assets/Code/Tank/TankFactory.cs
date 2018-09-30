@@ -40,7 +40,7 @@ public class TankFactory : MonoBehaviour
     {
         var tank = CreateTank<DummyTank>(mainColor);
 
-        
+
         PlaceTank(tank, startingPosition);
 
         tank.GetComponent<DummyTank>().Name = name;
@@ -85,22 +85,9 @@ public class TankFactory : MonoBehaviour
     {
 
         GameObject tank;
-        if (GameFlags.BasicTank)
-        {
-            tank = Instantiate(Resources.Load("Prefabs/ToyTank")) as UnityEngine.GameObject;
-            tank.AddComponent(typeof(T));
-            SetTankColor(tank, tankColor);
-        }
-        else
-        {
-            int randomTank = new System.Random().Next(1, 11);
-
-            tank = Instantiate(Resources.Load("Prefabs/Tanks/Tank"+randomTank)) as UnityEngine.GameObject;
-
-
-
-            tank.AddComponent(typeof(T));
-        }
+        int randomTank = new System.Random().Next(1, 11);
+        tank = Instantiate(Resources.Load("Prefabs/Tanks/Tank" + randomTank)) as UnityEngine.GameObject;
+        tank.AddComponent(typeof(T));
 
         return tank;
     }

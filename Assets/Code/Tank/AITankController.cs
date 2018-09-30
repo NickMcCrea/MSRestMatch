@@ -18,6 +18,9 @@ public class AITankController : TankController
     public override void Update()
     {
 
+        if (TrainingRoomMain.currentGameState != TrainingRoomMain.GameState.playing)
+            return;
+
         //Should do the following:
         //1. Identify the closest target.
         //2. Swivel the barrel to keep aim at it.
