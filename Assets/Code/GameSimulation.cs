@@ -18,7 +18,7 @@ public class GameObjectState
     public int Health;
     public int Ammo;
 
-   
+
 }
 
 public class GameSimulation
@@ -70,7 +70,7 @@ public class GameSimulation
         //TODO - check starting point for obstacles. Don't start too close to other tanks
 
         //already exists. Ignore.
-        if(FindTankObject(create.Token) != null)
+        if (FindTankObject(create.Token) != null)
         {
             return null;
         }
@@ -133,7 +133,7 @@ public class GameSimulation
 
         currentTank--;
         if (currentTank < 0)
-            currentTank = tankControllers.Count-1;
+            currentTank = tankControllers.Count - 1;
 
 
         return toReturn;
@@ -243,12 +243,12 @@ public class GameSimulation
     private void HandlePickupLogic()
     {
         float pickupDistance = 5f;
-        foreach(GameObject pickup in healthPickups)
+        foreach (GameObject pickup in healthPickups)
         {
-            foreach(TankController t in tankControllers)
+            foreach (TankController t in tankControllers)
             {
                 float distanceToPickup = (t.transform.position - pickup.transform.position).magnitude;
-                if(distanceToPickup < pickupDistance)
+                if (distanceToPickup < pickupDistance)
                 {
                     t.ReplenishHealth();
                     healthPickupsToRemove.Add(pickup);
@@ -293,7 +293,7 @@ public class GameSimulation
     private void SpawnHealthPickup()
     {
         var pickup = GameObject.Instantiate(Resources.Load("Prefabs/HealthPickup")) as UnityEngine.GameObject;
-        
+
         pickup.transform.position = RandomArenaPosition();
         healthPickups.Add(pickup);
     }
@@ -322,45 +322,69 @@ public class GameSimulation
             if (t.turret == null)
                 return;
 
-            float distanceBetweenTanks = (t.transform.position - t2.transform.position).magnitude;
 
+            Transform checkAgainst = t2.transform;
 
-
-
-            Vector3 toTank = t2.transform.position - t.transform.position;
-            toTank.Normalize();
-
-            //turret is the wrong way round, so need to use up.
-            float angle = Vector3.Angle(-t.turret.transform.up, toTank);
-
-
-            float dot = Vector3.Dot(-t.turret.transform.up, toTank);
-
-            if (distanceBetweenTanks < maxdistance && (Mathf.Abs(angle) < fov / 2))
+            if (CheckIfInFoV(t, checkAgainst))
             {
-                if (dot > 0 && dot < 1)
-                {
+                var obState = CreateTankState(t2);
+                objectsToAdd.Add(obState);
+            }
 
-                    if (t.Name == "AITank1")
-                    {
-                        Debug.DrawLine(t.transform.position, t2.transform.position, Color.green, 0);
-                        //Debug.Log("AITank1 sees : " + t2.Name + " distance: " + distanceBetweenTanks + " angle: " + angle + " dot: " + dot);
-                    }
+        }
 
-                    var obState = CreateTankState(t2);
-                    objectsToAdd.Add(obState);
-                }
+        foreach (GameObject healthPickup in healthPickups)
+        {
+            if (CheckIfInFoV(t, healthPickup.transform))
+            {
+                GameObjectState s = new GameObjectState();
+                s.Type = "HealthPickup";
+                s.X = healthPickup.transform.position.x;
+                s.Y = healthPickup.transform.position.z;
+                objectsToAdd.Add(s);
+            }
 
+        }
+
+        foreach (GameObject ammoPickup in ammoPickups)
+        {
+            if (CheckIfInFoV(t, ammoPickup.transform))
+            {
+                GameObjectState s = new GameObjectState();
+                s.Type = "AmmoPickup";
+                s.X = ammoPickup.transform.position.x;
+                s.Y = ammoPickup.transform.position.z;
+                objectsToAdd.Add(s);
+            }
+
+        }
+
+
+        objectsInFieldOfView[t.Token] = objectsToAdd;
+    }
+
+    private bool CheckIfInFoV(TankController t, Transform checkAgainst)
+    {
+        float distanceBetweenTanks = (t.transform.position - checkAgainst.position).magnitude;
+        Vector3 toTank = checkAgainst.position - t.transform.position;
+        toTank.Normalize();
+
+        //turret is the wrong way round, so need to use up.
+        float angle = Vector3.Angle(-t.turret.transform.up, toTank);
+        float dot = Vector3.Dot(-t.turret.transform.up, toTank);
+        bool isInFov = false;
+        if (distanceBetweenTanks < maxdistance && (Mathf.Abs(angle) < fov / 2))
+        {
+            if (dot > 0 && dot < 1)
+            {
+
+                isInFov = true;
 
             }
 
-
-
-            objectsInFieldOfView[t.Token] = objectsToAdd;
-
-            
-
         }
+
+        return isInFov;
     }
 
     private void UpdateTankState()
