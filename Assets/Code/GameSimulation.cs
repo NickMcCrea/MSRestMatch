@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameObjectState
@@ -403,7 +404,7 @@ public class GameSimulation
     {
         Debug.Log(victim.Name + " killed by " + killer.Name);
         victim.Deaths++;
-        killer.Kills++;
+        killer.Points++;
 
     }
 
@@ -519,6 +520,12 @@ public class GameSimulation
         }
         return new List<GameObjectState>();
     }
+
+    internal List<TankController> GetScores()
+    {
+        return tankControllers.OrderByDescending(x => x.Points).ToList();
+    }
+
 }
 
 public class GameSimRules

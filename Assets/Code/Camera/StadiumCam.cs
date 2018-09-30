@@ -44,6 +44,11 @@ public class StadiumCam : MonoBehaviour
         }
 
 
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            targetPoint = GameObject.Find("ScoreboardCanvas").transform.position;
+        }
+
         if (Input.GetKey(KeyCode.LeftArrow))
             Left();
 

@@ -28,7 +28,7 @@ public class TankController : MonoBehaviour
     public volatile float TurretForwardY;
     public string Token;
     public string Name;
-    public int Kills;
+    public int Points;
     public UnityEngine.GameObject root;
     public UnityEngine.GameObject turret;
     public UnityEngine.GameObject barrel;

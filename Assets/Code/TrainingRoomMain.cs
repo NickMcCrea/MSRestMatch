@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro.Examples;
+using System.Text;
 
 public static class GameFlags
 {
@@ -20,6 +23,8 @@ public class TrainingRoomMain : MonoBehaviour
     int aiTankCount = 0;
     int dummyTankCount = 0;
     private bool playMode = false;
+    Text scoreBoard;
+    DateTime scoreRefreshTime;
 
     // Use this for initialization
     void Start()
@@ -32,6 +37,11 @@ public class TrainingRoomMain : MonoBehaviour
         server = new TCPServer(simulation);
 
         cam = GameObject.Find("CameraRig").GetComponent<StadiumCam>();
+
+        scoreBoard = GameObject.Find("Scoreboard").GetComponent<Text>();
+
+
+        scoreRefreshTime = DateTime.Now;
 
     }
 
@@ -124,9 +134,34 @@ public class TrainingRoomMain : MonoBehaviour
 
 
 
+        if((DateTime.Now - scoreRefreshTime).TotalSeconds > 5)
+        {
+            RefreshScores();
+        }
 
         simulation.Update();
         server.Update();
+    }
+
+    private void RefreshScores()
+    {
+        var scores = simulation.GetScores();
+
+
+        StringBuilder sb = new StringBuilder();
+        sb.Append("LEADERBOARD");
+
+        sb.AppendLine();
+        sb.AppendLine();
+        foreach (TankController t in scores)
+        {
+            sb.Append(t.Name + " - " + t.Points);
+            sb.AppendLine();
+        }
+
+        scoreBoard.text = sb.ToString();
+
+        scoreRefreshTime = DateTime.Now;
     }
 
     private void GameStop()
