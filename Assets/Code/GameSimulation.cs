@@ -33,9 +33,16 @@ public class GameSimulation
     private List<TankController> tanksToBeRemoved;
     private int currentTank = 0;
 
+    private List<GameObject> healthPickups;
+    private List<GameObject> ammoPickups;
+    private List<GameObject> healthPickupsToRemove;
+    private List<GameObject> ammoPickupsToRemove;
+
     public float fov = 50;
     public float maxdistance = 100;
     private float arenaSize = 80f;
+
+    public bool GameInProgress { get; set; }
 
     public GameSimulation(GameSimRules ruleset)
     {
@@ -48,6 +55,10 @@ public class GameSimulation
         objectsInFieldOfView = new Dictionary<string, List<GameObjectState>>();
         tanksToBeRemoved = new List<TankController>();
 
+        healthPickups = new List<GameObject>();
+        ammoPickups = new List<GameObject>();
+        healthPickupsToRemove = new List<GameObject>();
+        ammoPickupsToRemove = new List<GameObject>();
     }
 
     internal GameObject CreatePlayer(PlayerCreate create)
@@ -185,6 +196,8 @@ public class GameSimulation
         allObjects.Clear();
 
 
+        HandlePickupLogic();
+
         foreach (TankController t in tanksToBeRemoved)
             RemoveTank(t);
         tanksToBeRemoved.Clear();
@@ -211,6 +224,78 @@ public class GameSimulation
             }
 
         }
+
+        int pickupCount = 2;
+        if (GameInProgress)
+        {
+
+            if (healthPickups.Count < pickupCount)
+            {
+                SpawnHealthPickup();
+            }
+            if (ammoPickups.Count < pickupCount)
+            {
+                SpawnAmmoPickup();
+            }
+        }
+    }
+
+    private void HandlePickupLogic()
+    {
+        float pickupDistance = 5f;
+        foreach(GameObject pickup in healthPickups)
+        {
+            foreach(TankController t in tankControllers)
+            {
+                float distanceToPickup = (t.transform.position - pickup.transform.position).magnitude;
+                if(distanceToPickup < pickupDistance)
+                {
+                    t.ReplenishHealth();
+                    healthPickupsToRemove.Add(pickup);
+                    GameObject.Destroy(pickup);
+                    Debug.Log(t.Name + " picks up health");
+                }
+            }
+        }
+        foreach (GameObject pickup in ammoPickups)
+        {
+            foreach (TankController t in tankControllers)
+            {
+                float distanceToPickup = (t.transform.position - pickup.transform.position).magnitude;
+                if (distanceToPickup < pickupDistance)
+                {
+                    t.ReplenishAmmo();
+                    ammoPickupsToRemove.Add(pickup);
+                    GameObject.Destroy(pickup);
+                    Debug.Log(t.Name + " picks up ammo");
+                }
+            }
+        }
+
+        foreach (GameObject pickup in healthPickupsToRemove)
+            healthPickups.Remove(pickup);
+
+        healthPickupsToRemove.Clear();
+
+        foreach (GameObject pickup in ammoPickupsToRemove)
+            ammoPickups.Remove(pickup);
+
+        ammoPickupsToRemove.Clear();
+    }
+
+    private void SpawnAmmoPickup()
+    {
+        var pickup = GameObject.Instantiate(Resources.Load("Prefabs/AmmoPickup")) as UnityEngine.GameObject;
+        pickup.transform.position = RandomArenaPosition();
+        ammoPickups.Add(pickup);
+    }
+
+    private void SpawnHealthPickup()
+    {
+        var pickup = GameObject.Instantiate(Resources.Load("Prefabs/HealthPickup")) as UnityEngine.GameObject;
+        
+        pickup.transform.position = RandomArenaPosition();
+        healthPickups.Add(pickup);
     }
 
     internal void RespawnTank(TankController tankController)
@@ -246,10 +331,10 @@ public class GameSimulation
             toTank.Normalize();
 
             //turret is the wrong way round, so need to use up.
-            float angle = Vector3.Angle(t.turret.transform.up, toTank);
+            float angle = Vector3.Angle(-t.turret.transform.up, toTank);
 
 
-            float dot = Vector3.Dot(t.turret.transform.up, toTank);
+            float dot = Vector3.Dot(-t.turret.transform.up, toTank);
 
             if (distanceBetweenTanks < maxdistance && (Mathf.Abs(angle) < fov / 2))
             {
@@ -273,8 +358,7 @@ public class GameSimulation
 
             objectsInFieldOfView[t.Token] = objectsToAdd;
 
-
-            //Debug.Log(t.Name + " can see " + objectsInFieldOfView[t.Token].Count + " tanks ");
+            
 
         }
     }
@@ -317,6 +401,9 @@ public class GameSimulation
     {
         TankController t = FindTankObject(command.Token);
 
+        if (!GameInProgress)
+            if (command.Type != CommandType.PlayerCreate)
+                return;
 
 
         switch (command.Type)

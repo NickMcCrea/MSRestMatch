@@ -108,7 +108,7 @@ public class TrainingRoomMain : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Alpha3))
         {
             aiTankCount++;
-            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, true);
+            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, false);
         }
 
         if (Input.GetKeyUp(KeyCode.Backspace))
@@ -131,6 +131,7 @@ public class TrainingRoomMain : MonoBehaviour
 
     private void GameStop()
     {
+        simulation.GameInProgress = false;
         cam.SetTargetFollowMode(simulation.GetNextTank());
         playMode = false;
         GameObject.Find("MainLogo").GetComponent<Fade>().FadeIn(0.8f);
@@ -138,6 +139,7 @@ public class TrainingRoomMain : MonoBehaviour
 
     private void GameStart()
     {
+        simulation.GameInProgress = true;
         cam.SetTargetFollowMode(simulation.GetNextTank());
         playMode = true;
         GameObject.Find("MainLogo").GetComponent<Fade>().FadeOut(2f);

@@ -147,7 +147,7 @@ public class TankController : MonoBehaviour
         Heading = Heading * Mathf.Rad2Deg;
         Heading = (Heading + 360) % 360;
 
-        TurretHeading = (float)Math.Atan2(turret.transform.up.z, turret.transform.up.x);
+        TurretHeading = (float)Math.Atan2(-turret.transform.up.z, -turret.transform.up.x);
         TurretHeading = TurretHeading * Mathf.Rad2Deg;
         TurretHeading = (TurretHeading + 360) % 360;
 
