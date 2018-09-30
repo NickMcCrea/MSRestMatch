@@ -1,12 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StadiumCam : MonoBehaviour {
+public class StadiumCam : MonoBehaviour
+{
 
     public CameraMode currentCameraMode;
     private GameObject currentTarget;
     private Vector3 targetPoint;
+
     private float rotationSpeed = 0.1f;
     private float zoomDistance = 0.1f;
     private float zoomChange;
@@ -18,23 +21,27 @@ public class StadiumCam : MonoBehaviour {
         centerCircle
     }
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
 
         currentCameraMode = CameraMode.centerCircle;
         targetPoint = Vector3.zero;
 
         zoomChange = 0;
         desiredPosition = transform.position;
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
 
         if (currentCameraMode == CameraMode.centerCircle)
             targetPoint = Vector3.zero;
         else
+        {
             targetPoint = currentTarget.transform.position;
+        }
 
 
         if (Input.GetKey(KeyCode.LeftArrow))
@@ -54,10 +61,14 @@ public class StadiumCam : MonoBehaviour {
         Vector3 toTarget = targetPoint - transform.position;
         toTarget.Normalize();
         desiredPosition = transform.position + toTarget * zoomChange;
+
         Vector3 newPos = Vector3.Lerp(transform.position, desiredPosition, 0.9f);
         transform.position = newPos;
         zoomChange *= 0.9f;
-        
+
+        Vector3 lTargetDir = targetPoint - transform.position;
+     
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(lTargetDir), Time.time * 0.1f);
 
     }
 
@@ -65,11 +76,14 @@ public class StadiumCam : MonoBehaviour {
     {
         currentCameraMode = CameraMode.targetTrack;
         currentTarget = newTarget;
+        
+       
     }
 
     public void SetCenterCircleMode()
     {
         currentCameraMode = CameraMode.centerCircle;
+       
     }
 
 
@@ -82,6 +96,7 @@ public class StadiumCam : MonoBehaviour {
     {
         transform.RotateAround(targetPoint, Vector3.up, rotationSpeed);
     }
+
     public void Right(float speed)
     {
         transform.RotateAround(targetPoint, Vector3.up, -speed);
@@ -91,14 +106,15 @@ public class StadiumCam : MonoBehaviour {
     {
         transform.RotateAround(targetPoint, Vector3.up, speed);
     }
+
     public void Up()
     {
-        
+
     }
 
     public void Down()
     {
-        
+
     }
 
     public void ZoomIn()

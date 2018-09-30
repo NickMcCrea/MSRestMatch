@@ -13,7 +13,7 @@ public static class GameFlags
 
 public class TrainingRoomMain : MonoBehaviour
 {
-    
+
     GameSimulation simulation;
     TCPServer server;
     StadiumCam cam;
@@ -26,17 +26,6 @@ public class TrainingRoomMain : MonoBehaviour
         simulation = new GameSimulation(ruleSet);
 
 
-
-        //simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank1", new Vector3(0, 0, 30), true, true);
-        //simulation.CreateDummyTank(GenerateRandomHexColorString(), "DummyTank2", new Vector3(0, 0, -30), true, true);
-
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank1", new Vector3(0, 5, 0), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank2", new Vector3(30, 5, -30), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank3", new Vector3(30, 5, 0), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank4", new Vector3(0, 5, -30), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank5", new Vector3(30, 5, 30), false, true);
-        //simulation.CreateAITank(GenerateRandomHexColorString(), "AITank6", new Vector3(-30, 5, -30), false, true);
-
         server = new TCPServer(simulation);
 
         cam = GameObject.Find("CameraRig").GetComponent<StadiumCam>();
@@ -45,7 +34,7 @@ public class TrainingRoomMain : MonoBehaviour
     private void OnApplicationQuit()
     {
         server.Close();
-       
+
     }
 
     private static string GenerateRandomHexColorString()
@@ -63,6 +52,20 @@ public class TrainingRoomMain : MonoBehaviour
             cam.Left(0.1f);
             if (cam.transform.position.magnitude < 250)
                 cam.ZoomOut();
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftBracket))
+        {
+            cam.SetTargetFollowMode(simulation.GetNextTank());
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightBracket))
+        {
+            cam.SetTargetFollowMode(simulation.GetPreviousTank());
+        }
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            cam.SetCenterCircleMode();
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha1))

@@ -21,7 +21,7 @@ public class TCPServer
     private GameSimulation sim;
     DateTime ownStateLastUpdate = DateTime.Now;
     DateTime objectStateLastUpdate = DateTime.Now;
-    
+
 
     public TCPServer(GameSimulation simulation)
     {
@@ -29,18 +29,18 @@ public class TCPServer
         messages = new Queue<NetworkMessage>();
         networkThread = new Thread(new ThreadStart(StartServer));
         connectedClients = new List<TcpClient>();
-      
+
         networkThread.Start();
     }
 
-    
+
 
     private void StartServer()
     {
         tcpListener = new TcpListener(IPAddress.Parse(ipAddress), port);
         tcpListener.Start();
 
-        
+
         while (listening)
         {
             try
@@ -49,7 +49,7 @@ public class TCPServer
                 ThreadPool.QueueUserWorkItem(NewClientConnection, client);
                 Thread.Sleep(16);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogException(ex);
             }
@@ -59,8 +59,8 @@ public class TCPServer
 
     public void Close()
     {
-        
-        foreach(TcpClient c in connectedClients)
+
+        foreach (TcpClient c in connectedClients)
         {
             if (c.Connected)
                 c.Close();
@@ -70,8 +70,8 @@ public class TCPServer
 
         tcpListener.Stop();
         listening = false;
-       
-        
+
+
     }
 
     private void NewClientConnection(object obj)
@@ -122,7 +122,7 @@ public class TCPServer
 
         lock (messages)
         {
-            messages.Enqueue(new NetworkMessage() { type = messageType, data = clientMessage, sender = client});
+            messages.Enqueue(new NetworkMessage() { type = messageType, data = clientMessage, sender = client });
         }
 
     }
@@ -168,8 +168,19 @@ public class TCPServer
             NetworkStream stream = client.GetStream();
             if (stream.CanWrite)
             {
+
+                for (int i = 0; i < message.Length - 1; i++)
+                {
+                    if (message[i] == 125)
+                        if (message[i + 1] == 125)
+                        {
+                            Debug.Log("FAULTY JSON GENERATED");
+                        }
+                }
+
+
                 stream.Write(message, 0, message.Length);
-              
+
 
             }
         }
@@ -181,7 +192,7 @@ public class TCPServer
 
     private void UpdateClientWithOwnState(TcpClient client)
     {
-        
+
 
         try
         {
@@ -210,11 +221,11 @@ public class TCPServer
 
     private void UpdateClientWithOtherObjectState(TcpClient client)
     {
-       
+
 
         try
         {
-      
+
             if (client.Connected)
             {
                 var gameObjectsInView = sim.GetObjectsInViewOfTank(client.Client.RemoteEndPoint.ToString());
@@ -243,7 +254,7 @@ public class TCPServer
             //make the id of the tank the IP address of the client
             string clientId = newMessage.sender.Client.RemoteEndPoint.ToString().Split(':')[0];
 
-           
+
 
             switch (newMessage.type)
             {
@@ -326,11 +337,8 @@ public static class MessageFactory
 
     public static byte[] CreateObjectUpdateMessage(string json)
     {
-        Debug.Log(json);
         byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
-        Debug.Log(clientMessageAsByteArray.Length);
         return AddByteStartOfToArray(clientMessageAsByteArray, 12);
-
     }
 
     public static byte[] AddByteStartOfToArray(byte[] bArray, byte newByte)
@@ -341,7 +349,7 @@ public static class MessageFactory
         return newArray;
     }
 
-    
+
 
 
 }
@@ -357,7 +365,7 @@ public struct NetworkMessage
 public struct CreatePlayer
 {
     public string Name;
-   
+
 }
 
 
@@ -375,6 +383,6 @@ public enum NetworkMessageType
     turretLeft = 9,
     turretRight = 10,
     stopTurret = 11,
-    objectUpdate=12,
+    objectUpdate = 12,
 
 }

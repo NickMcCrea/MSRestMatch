@@ -31,7 +31,7 @@ public class GameSimulation
     private List<GameObjectState> allObjects;
     private Dictionary<string, List<GameObjectState>> objectsInFieldOfView;
     private List<TankController> tanksToBeRemoved;
-
+    private int currentTank = 0;
 
     public float fov = 50;
     public float maxdistance = 100;
@@ -74,6 +74,25 @@ public class GameSimulation
         return t;
     }
 
+    internal GameObject GetNextTank()
+    {
+        GameObject toReturn = null;
+        if (tankControllers.Count == 0)
+        {
+            currentTank = 0;
+            return null;
+        }
+
+        if (tankControllers.Count > currentTank)
+            toReturn = tankControllers[currentTank].gameObject;
+
+        currentTank++;
+        if (currentTank >= tankControllers.Count)
+            currentTank = 0;
+
+
+        return toReturn;
+    }
 
     internal GameObject CreatePlayerTest(PlayerCreateTest create)
     {
@@ -86,6 +105,28 @@ public class GameSimulation
         t.GetComponent<TankController>().Sim = this;
         tankControllers.Add(t.GetComponent<TankController>());
         return t;
+    }
+
+    internal GameObject GetPreviousTank()
+    {
+        GameObject toReturn = null;
+        if (tankControllers.Count == 0)
+        {
+            currentTank = 0;
+            return null;
+
+        }
+
+        if (tankControllers.Count > currentTank)
+            toReturn = tankControllers[currentTank].gameObject;
+
+        currentTank--;
+        if (currentTank < 0)
+            currentTank = tankControllers.Count-1;
+
+
+        return toReturn;
+
     }
 
     internal void ClearAllNonPlayerTanks()
