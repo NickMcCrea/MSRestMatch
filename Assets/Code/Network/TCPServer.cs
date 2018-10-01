@@ -13,8 +13,8 @@ public class TCPServer
     private TimeSpan updateMessageInterval = new TimeSpan(0, 0, 0, 0, 300);
     private TcpListener tcpListener;
     private Thread networkThread;
-    private readonly string ipAddress = "127.0.0.1";
-    private readonly int port = 8052;
+    private readonly string ipAddress;
+    private readonly int port;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
     private Queue<NetworkMessage> messages;
@@ -25,6 +25,10 @@ public class TCPServer
 
     public TCPServer(GameSimulation simulation)
     {
+
+        ipAddress = ConfigReader.GetValue("ipaddress");
+        port = Int32.Parse(ConfigReader.GetValue("port"));
+
         sim = simulation;
         messages = new Queue<NetworkMessage>();
         networkThread = new Thread(new ThreadStart(StartServer));
@@ -51,7 +55,7 @@ public class TCPServer
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+               
             }
 
         }
@@ -78,8 +82,9 @@ public class TCPServer
     {
         try
         {
+            
             var client = (TcpClient)obj;
-
+            Debug.Log("Client connection made: " + client.Client.RemoteEndPoint.ToString());
             lock (connectedClients)
             {
                 connectedClients.Add(client);
@@ -321,7 +326,7 @@ public class TCPServer
         }
         catch (Exception ex)
         {
-            Debug.LogException(ex);
+           
         }
 
 
