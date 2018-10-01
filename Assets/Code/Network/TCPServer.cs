@@ -338,14 +338,15 @@ public static class MessageFactory
     public static byte[] CreateObjectUpdateMessage(string json)
     {
         byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
-        return AddByteStartOfToArray(clientMessageAsByteArray, 12);
+        return AddTypeAndLengthToArray(clientMessageAsByteArray, 12);
     }
 
-    public static byte[] AddByteStartOfToArray(byte[] bArray, byte newByte)
+    public static byte[] AddTypeAndLengthToArray(byte[] bArray, byte type)
     {
-        byte[] newArray = new byte[bArray.Length + 1];
-        bArray.CopyTo(newArray, 1);
-        newArray[0] = newByte;
+        byte[] newArray = new byte[bArray.Length + 2];
+        bArray.CopyTo(newArray, 2);
+        newArray[0] = type;
+        newArray[1] = (byte)bArray.Length;
         return newArray;
     }
 
