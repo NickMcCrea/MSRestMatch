@@ -85,20 +85,35 @@ public class TCPServer
                 connectedClients.Add(client);
             }
 
-            Byte[] bytes = new Byte[1024];
+
             // Get a stream object for reading 					
             using (NetworkStream stream = client.GetStream())
             {
 
-                int length;
-                // Read incomming stream into byte arrary. 						
-                while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+                while (client.Connected)
                 {
-                    DecodeMessage(client, (NetworkMessageType)bytes[0], bytes, length);
+                    int messageType = stream.ReadByte();
+                    int length = stream.ReadByte();
 
-                    if (!listening)
-                        return;
+                    Byte[] bytes = new Byte[length];
+
+
+                    // Read length bytes into byte arrary. This is our JSON package, if any
+                    string jsonString = "";
+                    if (length > 0)
+                    {
+                        stream.Read(bytes, 0, length);
+                        jsonString = Encoding.ASCII.GetString(bytes);
+                    }
+
+                    lock (messages)
+                    {
+                        messages.Enqueue(new NetworkMessage() { type = (NetworkMessageType)messageType, data = jsonString, sender = client });
+                    }
+
+
                 }
+
             }
         }
         catch (Exception ex)
@@ -108,25 +123,7 @@ public class TCPServer
 
     }
 
-    private void DecodeMessage(TcpClient client, NetworkMessageType messageType, byte[] bytes, int length)
-    {
-
-        var incomingData = new byte[length];
-        Array.Copy(bytes, 1, incomingData, 0, length);
-        string clientMessage = Encoding.ASCII.GetString(incomingData);
-
-
-        var strings = clientMessage.Split(':');
-        var token = strings[0];
-
-
-        lock (messages)
-        {
-            messages.Enqueue(new NetworkMessage() { type = messageType, data = clientMessage, sender = client });
-        }
-
-    }
-
+    
     public void Update()
     {
         if (messages.Count > 0)
