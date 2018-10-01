@@ -85,3 +85,7 @@ TankySpanky_Data/MonoBleedingEdge/EmbedRuntime/mono-2.0-bdwgc.dll
 UnityPlayer.dll
 UnityPlayer_Win32_development_x64.pdb
 WindowsPlayer_x64_Release.pdb
+*.csproj
+.vs/MSRestMatch/v15/.suo
+.vs/MSRestMatch/v15/Server/sqlite3/storage.ide-wal
+.vs/MSRestMatch/v15/Server/sqlite3/storage.ide-shm
