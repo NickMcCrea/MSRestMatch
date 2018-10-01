@@ -383,6 +383,9 @@ public class GameSimulation
 
     private bool CheckIfInFoV(TankController t, Transform checkAgainst)
     {
+        if (t.turret == null)
+            return false;
+
         float distanceBetweenTanks = (t.transform.position - checkAgainst.position).magnitude;
         Vector3 toTank = checkAgainst.position - t.transform.position;
         toTank.Normalize();
