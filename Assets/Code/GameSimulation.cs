@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GameObjectState
 {
@@ -19,6 +21,12 @@ public class GameObjectState
     public int Health;
     public int Ammo;
 
+
+}
+
+[System.Serializable]
+public class TankEvent<TankController> : UnityEvent<TankController>
+{
 
 }
 
@@ -44,7 +52,14 @@ public class GameSimulation
     public float fov = 50;
     public float maxdistance = 100;
     private float arenaSize = 80f;
-    
+
+
+    //some events
+    public TankEvent<TankController> healthPickupEvent;
+    public TankEvent<TankController> ammoPickupEvent;
+    public TankEvent<TankController> snitchPickupEvent;
+
+
 
     public GameSimulation(GameSimRules ruleset)
     {
@@ -61,6 +76,13 @@ public class GameSimulation
         ammoPickups = new List<GameObject>();
         healthPickupsToRemove = new List<GameObject>();
         ammoPickupsToRemove = new List<GameObject>();
+
+
+        //event setup
+        healthPickupEvent = new TankEvent<TankController>();
+        ammoPickupEvent = new TankEvent<TankController>();
+        snitchPickupEvent = new TankEvent<TankController>();
+
     }
 
     internal GameObject CreatePlayer(PlayerCreate create)
@@ -169,6 +191,8 @@ public class GameSimulation
         {
             tanksToBeRemoved.Add(t);
         }
+        GameObject.Destroy(snitch);
+        snitch = null;
     }
 
     internal GameObject CreateDummyTank(string color, string name, Vector3 startingPos, bool infiniteHealth, bool infiniteAmmo)
@@ -260,6 +284,7 @@ public class GameSimulation
 
     private void HandlePickupLogic()
     {
+
         float pickupDistance = 5f;
         foreach (GameObject pickup in healthPickups)
         {
@@ -272,6 +297,11 @@ public class GameSimulation
                     healthPickupsToRemove.Add(pickup);
                     GameObject.Destroy(pickup);
                     Debug.Log(t.Name + " picks up health");
+
+                    healthPickupEvent.Invoke(t);
+                    
+
+
                 }
             }
         }
@@ -286,9 +316,13 @@ public class GameSimulation
                     ammoPickupsToRemove.Add(pickup);
                     GameObject.Destroy(pickup);
                     Debug.Log(t.Name + " picks up ammo");
+
+                    ammoPickupEvent.Invoke(t);
                 }
             }
         }
+
+
 
         foreach (GameObject pickup in healthPickupsToRemove)
             healthPickups.Remove(pickup);
@@ -375,6 +409,15 @@ public class GameSimulation
                 objectsToAdd.Add(s);
             }
 
+        }
+
+        if (CheckIfInFoV(t, snitch.transform))
+        {
+            GameObjectState s = new GameObjectState();
+            s.Type = "Snitch";
+            s.X = snitch.transform.position.x;
+            s.Y = snitch.transform.position.z;
+            objectsToAdd.Add(s);
         }
 
 

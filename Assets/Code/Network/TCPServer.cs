@@ -35,10 +35,11 @@ public class TCPServer
         connectedClients = new List<TcpClient>();
 
         networkThread.Start();
+
+        SetupEvents();
     }
 
-
-
+   
     private void StartServer()
     {
         tcpListener = new TcpListener(IPAddress.Parse(ipAddress), port);
@@ -55,7 +56,7 @@ public class TCPServer
             }
             catch (Exception ex)
             {
-               
+
             }
 
         }
@@ -82,7 +83,7 @@ public class TCPServer
     {
         try
         {
-            
+
             var client = (TcpClient)obj;
             Debug.Log("Client connection made: " + client.Client.RemoteEndPoint.ToString());
             lock (connectedClients)
@@ -128,7 +129,6 @@ public class TCPServer
 
     }
 
-    
     public void Update()
     {
         if (messages.Count > 0)
@@ -170,26 +170,23 @@ public class TCPServer
             NetworkStream stream = client.GetStream();
             if (stream.CanWrite)
             {
-
-                for (int i = 0; i < message.Length - 1; i++)
-                {
-                    if (message[i] == 125)
-                        if (message[i + 1] == 125)
-                        {
-                            Debug.Log("FAULTY JSON GENERATED");
-                        }
-                }
-
-
                 stream.Write(message, 0, message.Length);
-
-
             }
         }
         catch (SocketException socketException)
         {
             Console.WriteLine("Socket exception: " + socketException);
         }
+    }
+
+    private TcpClient GetClientForTank(TankController tank)
+    {
+        foreach (TcpClient tcpClient in connectedClients)
+        {
+            if (tcpClient.Client.RemoteEndPoint.ToString().Split(':')[0] == tank.Token)
+                return tcpClient;
+        }
+        return null;
     }
 
     private void UpdateClientWithOwnState(TcpClient client)
@@ -326,12 +323,38 @@ public class TCPServer
         }
         catch (Exception ex)
         {
-           
+
         }
 
 
     }
 
+    private void SetupEvents()
+    {
+        sim.healthPickupEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.healthPickup;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+                );
+
+        sim.ammoPickupEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.ammoPickup;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+       );
+    }
 
 }
 
@@ -388,5 +411,8 @@ public enum NetworkMessageType
     turretRight = 10,
     stopTurret = 11,
     objectUpdate = 12,
+    healthPickup = 13,
+    ammoPickup = 14,
+    snitchPickup = 15
 
 }

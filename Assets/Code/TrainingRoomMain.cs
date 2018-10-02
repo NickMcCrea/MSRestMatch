@@ -26,7 +26,7 @@ public class TrainingRoomMain : MonoBehaviour
     }
 
     public static GameState currentGameState = GameState.notStarted;
-    GameSimulation simulation;
+    public static GameSimulation simulation;
     TCPServer server;
     StadiumCam cam;
     int aiTankCount = 0;
@@ -56,7 +56,7 @@ public class TrainingRoomMain : MonoBehaviour
         scoreBoard = GameObject.Find("Scoreboard").GetComponent<Text>();
         timer = GameObject.Find("Timer").GetComponent<Text>();
 
-        gameDuration = new TimeSpan(0, 3, 0);
+        gameDuration = new TimeSpan(0, 2, 0);
 
         timer.text = string.Format("{0:hh\\:mm\\:ss}", gameDuration);
 

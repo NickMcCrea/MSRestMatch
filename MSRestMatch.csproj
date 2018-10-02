@@ -332,6 +332,7 @@
     <Compile Include="Assets\Code\MainMenu.cs" />
     <Compile Include="Assets\Code\Network\TCPServer.cs" />
     <Compile Include="Assets\Code\Player.cs" />
+    <Compile Include="Assets\Code\SnitchBehaviour.cs" />
     <Compile Include="Assets\Code\Tank\AITankController.cs" />
     <Compile Include="Assets\Code\Tank\DerivedTankController.cs" />
     <Compile Include="Assets\Code\Tank\DummyTank.cs" />
@@ -340,7 +341,6 @@
     <Compile Include="Assets\Code\Tank\TankController.cs" />
     <Compile Include="Assets\Code\Tank\TankFactory.cs" />
     <Compile Include="Assets\Code\TrainingRoomMain.cs" />
-    <Compile Include="Assets\SnitchBehaviour.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
