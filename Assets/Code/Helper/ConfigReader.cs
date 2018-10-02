@@ -7,10 +7,13 @@ public static class ConfigReader
 {
 
     private static Dictionary<string, string> keyValuePairs;
+    private static Dictionary<string, string> defaultKvps;
 
     static ConfigReader()
     {
         keyValuePairs = new Dictionary<string, string>();
+        defaultKvps = new Dictionary<string, string>();
+
 
         if (!Application.isEditor && File.Exists("tanks.ini"))
         {
@@ -26,8 +29,9 @@ public static class ConfigReader
         else
         {
             //some defaults
-            keyValuePairs.Add("ipaddress", "127.0.0.1");
-            keyValuePairs.Add("port", "8052");
+            defaultKvps.Add("ipaddress", "127.0.0.1");
+            defaultKvps.Add("port", "8052");
+            defaultKvps.Add("use_port_in_token", "false");
         }
 
 
@@ -38,6 +42,9 @@ public static class ConfigReader
     {
         if (keyValuePairs.ContainsKey(property))
             return keyValuePairs[property];
+        if (defaultKvps.ContainsKey(property))
+            return defaultKvps[property];
+
         return "";
     }
 }

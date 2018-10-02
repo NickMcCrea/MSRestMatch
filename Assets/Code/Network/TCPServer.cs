@@ -21,13 +21,15 @@ public class TCPServer
     private GameSimulation sim;
     DateTime ownStateLastUpdate = DateTime.Now;
     DateTime objectStateLastUpdate = DateTime.Now;
-
+    bool usePortInToken = false;
 
     public TCPServer(GameSimulation simulation)
     {
 
         ipAddress = ConfigReader.GetValue("ipaddress");
         port = Int32.Parse(ConfigReader.GetValue("port"));
+
+        usePortInToken = bool.Parse(ConfigReader.GetValue("use_port_in_token"));
 
         sim = simulation;
         messages = new Queue<NetworkMessage>();
@@ -39,7 +41,7 @@ public class TCPServer
         SetupEvents();
     }
 
-   
+
     private void StartServer()
     {
         tcpListener = new TcpListener(IPAddress.Parse(ipAddress), port);
@@ -85,7 +87,7 @@ public class TCPServer
         {
 
             var client = (TcpClient)obj;
-            Debug.Log("Client connection made: " + client.Client.RemoteEndPoint.ToString());
+            Debug.Log("Client connection made: " + GetTokenFromEndpoint(client));
             lock (connectedClients)
             {
                 connectedClients.Add(client);
@@ -183,7 +185,7 @@ public class TCPServer
     {
         foreach (TcpClient tcpClient in connectedClients)
         {
-            if (tcpClient.Client.RemoteEndPoint.ToString().Split(':')[0] == tank.Token)
+            if (GetTokenFromEndpoint(tcpClient) == tank.Token)
                 return tcpClient;
         }
         return null;
@@ -200,7 +202,7 @@ public class TCPServer
             {
                 foreach (TankController t in sim.tankControllers)
                 {
-                    if (t.Token == client.Client.RemoteEndPoint.ToString().Split(':')[0])
+                    if (t.Token == GetTokenFromEndpoint(client))
                     {
                         var obj = new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
                         var json = JsonUtility.ToJson(obj);
@@ -227,7 +229,7 @@ public class TCPServer
 
             if (client.Connected)
             {
-                var gameObjectsInView = sim.GetObjectsInViewOfTank(client.Client.RemoteEndPoint.ToString().Split(':')[0]);
+                var gameObjectsInView = sim.GetObjectsInViewOfTank(GetTokenFromEndpoint(client));
 
                 foreach (GameObjectState s in gameObjectsInView)
                 {
@@ -244,6 +246,14 @@ public class TCPServer
         }
     }
 
+    private string GetTokenFromEndpoint(TcpClient client)
+    {
+        if (usePortInToken)
+            return client.Client.RemoteEndPoint.ToString();
+        else
+            return client.Client.RemoteEndPoint.ToString().Split(':')[0];
+    }
+
     private void HandleMessage(NetworkMessage newMessage)
     {
         try
@@ -251,7 +261,7 @@ public class TCPServer
             Debug.Log(newMessage.type + " - " + (string)newMessage.data);
 
             //make the id of the tank the IP address of the client
-            string clientId = newMessage.sender.Client.RemoteEndPoint.ToString().Split(':')[0];
+            string clientId = GetTokenFromEndpoint(newMessage.sender);
 
 
 

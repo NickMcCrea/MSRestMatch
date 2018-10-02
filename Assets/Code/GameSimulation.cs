@@ -11,17 +11,10 @@ public class GameObjectState
     public string Type;
     public float X;
     public float Y;
-    public float ForwardX;
-    public float ForwardY;
     public float Heading;
     public float TurretHeading;
-    public float TurretForwardX;
-    public float TurretForwardY;
-
     public int Health;
     public int Ammo;
-
-
 }
 
 [System.Serializable]
