@@ -8,12 +8,6 @@ using UnityEngine.UI;
 using TMPro.Examples;
 using System.Text;
 
-public static class GameFlags
-{
-
-    public static bool KillCaptureMode = true;
-    public static bool SnitchEnabled = true;
-}
 
 public class TrainingRoomMain : MonoBehaviour
 {
@@ -56,7 +50,7 @@ public class TrainingRoomMain : MonoBehaviour
         scoreBoard = GameObject.Find("Scoreboard").GetComponent<Text>();
         timer = GameObject.Find("Timer").GetComponent<Text>();
 
-        gameDuration = new TimeSpan(0, 2, 0);
+        gameDuration = new TimeSpan(0, 0, Int32.Parse(ConfigValueStore.GetValue("game_time")));
 
         timer.text = string.Format("{0:hh\\:mm\\:ss}", gameDuration);
 

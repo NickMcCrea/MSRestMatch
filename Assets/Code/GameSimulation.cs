@@ -281,9 +281,9 @@ public class GameSimulation
                 SpawnAmmoPickup();
             }
 
-            if(TrainingRoomMain.timeLeft.TotalSeconds < 120)
+            if(TrainingRoomMain.timeLeft.TotalSeconds < ConfigValueStore.GetIntValue("snitch_spawn_threshold"))
             {
-                if(!snitchSpawned && GameFlags.SnitchEnabled)
+                if(!snitchSpawned && ConfigValueStore.GetBoolValue("snitch_enabled"))
                 {
                     SpawnSnitch();
                 }
@@ -493,7 +493,7 @@ public class GameSimulation
         Debug.Log(victim.Name + " killed by " + killer.Name);
         victim.Deaths++;
 
-        if (GameFlags.KillCaptureMode)
+        if (ConfigValueStore.GetBoolValue("kill_capture_mode"))
             killer.UnbankedPoints++;
         else
             killer.Points++;

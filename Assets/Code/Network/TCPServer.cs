@@ -26,10 +26,10 @@ public class TCPServer
     public TCPServer(GameSimulation simulation)
     {
 
-        ipAddress = ConfigReader.GetValue("ipaddress");
-        port = Int32.Parse(ConfigReader.GetValue("port"));
+        ipAddress = ConfigValueStore.GetValue("ipaddress");
+        port = Int32.Parse(ConfigValueStore.GetValue("port"));
 
-        usePortInToken = bool.Parse(ConfigReader.GetValue("use_port_in_token"));
+        usePortInToken = ConfigValueStore.GetBoolValue("use_port_in_token");
 
         sim = simulation;
         messages = new Queue<NetworkMessage>();
