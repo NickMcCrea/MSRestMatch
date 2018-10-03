@@ -7,7 +7,7 @@ public class SnitchBehaviour : MonoBehaviour
     private float speed = 10f;
     private float amplitude = 0.03f;
     private float frequency = 2f;
-    private TankController collector;
+    public TankController collector;
     private float wanderCircleDistance = 20f;
     private float wanderCircleRadius = 3f;
 
@@ -46,10 +46,14 @@ public class SnitchBehaviour : MonoBehaviour
         if (currentMode == SnitchMode.collected)
         {
             if (collector != null && collector.currentState != TankController.TankState.destroyed)
+            {
                 transform.position = collector.transform.position + new Vector3(0, 5, 0);
+               
+            }
             else
             {
                 currentMode = SnitchMode.wander;
+                collector = null;
             }
         }
 
@@ -98,7 +102,11 @@ public class SnitchBehaviour : MonoBehaviour
         {
             currentMode = SnitchMode.collected;
             collector = other.gameObject.GetComponent<TankController>();
+            EventManager.snitchPickupEvent.Invoke(collector);
+
         }
+
+
     }
 
 }

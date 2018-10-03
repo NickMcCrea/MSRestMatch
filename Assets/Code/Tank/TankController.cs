@@ -12,6 +12,8 @@ public class TankController : MonoBehaviour
         normal,
         destroyed
     }
+
+    private const int SnitchPoints = 10;
     public bool infiniteHealth = false;
     public bool infiniteAmmo = false;
     public Color mainTankColor;
@@ -421,6 +423,24 @@ public class TankController : MonoBehaviour
         {
             Points += UnbankedPoints;
             UnbankedPoints = 0;
+
+            EventManager.goalEvent.Invoke(this);
+
+            //do we have a snitch?
+            if(Sim.snitch != null)
+            {
+                if(Sim.snitch.GetComponent<SnitchBehaviour>().collector != null)
+                {
+                    if(Sim.snitch.GetComponent<SnitchBehaviour>().collector == this)
+                    {
+                        //we took the snitch to a goal!
+                        Debug.Log("SNITCH COLLECTED SUCCESSFULLY!");
+                        Points += SnitchPoints;
+                        GameObject.Destroy(Sim.snitch);
+                    }
+                }
+            }
+
         }
     }
 

@@ -341,7 +341,7 @@ public class TCPServer
 
     private void SetupEvents()
     {
-        sim.healthPickupEvent.AddListener(x =>
+        EventManager.healthPickupEvent.AddListener(x =>
         {
             byte[] message = new byte[2];
             message[0] = (byte)NetworkMessageType.healthPickup;
@@ -353,7 +353,7 @@ public class TCPServer
         }
                 );
 
-        sim.ammoPickupEvent.AddListener(x =>
+        EventManager.ammoPickupEvent.AddListener(x =>
         {
             byte[] message = new byte[2];
             message[0] = (byte)NetworkMessageType.ammoPickup;
@@ -364,6 +364,54 @@ public class TCPServer
                 client.Client.Send(message);
         }
        );
+
+        EventManager.snitchPickupEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.snitchPickup;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        });
+
+        EventManager.destroyedEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.destroyed;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+     );
+
+        EventManager.killEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.kill;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+   );
+
+        EventManager.goalEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.enteredGoal;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+   );
+
     }
 
 }
@@ -423,6 +471,9 @@ public enum NetworkMessageType
     objectUpdate = 12,
     healthPickup = 13,
     ammoPickup = 14,
-    snitchPickup = 15
+    snitchPickup = 15,
+    destroyed = 16,
+    enteredGoal = 17,
+    kill = 18
 
 }

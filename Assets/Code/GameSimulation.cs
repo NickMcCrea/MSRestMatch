@@ -23,6 +23,35 @@ public class TankEvent<TankController> : UnityEvent<TankController>
 
 }
 
+public static class EventManager
+{
+    public static TankEvent<TankController> healthPickupEvent;
+    public static TankEvent<TankController> ammoPickupEvent;
+    public static TankEvent<TankController> snitchPickupEvent;
+
+    public static TankEvent<TankController> destroyedEvent;
+    public static TankEvent<TankController> killEvent;
+    public static TankEvent<TankController> goalEvent;
+
+    static EventManager()
+    {
+
+    }
+
+    public static void Initialise()
+    {
+        healthPickupEvent = new TankEvent<TankController>();
+        ammoPickupEvent = new TankEvent<TankController>();
+        snitchPickupEvent = new TankEvent<TankController>();
+
+
+        destroyedEvent = new TankEvent<TankController>();
+        killEvent = new TankEvent<TankController>();
+        goalEvent = new TankEvent<TankController>();
+
+    }
+}
+
 public class GameSimulation
 {
     GameSimRules rules;
@@ -34,13 +63,13 @@ public class GameSimulation
     private Dictionary<string, List<GameObjectState>> objectsInFieldOfView;
     private List<TankController> tanksToBeRemoved;
     private int currentTank = 0;
-
+    private bool snitchSpawned = false;
     private List<GameObject> healthPickups;
     private List<GameObject> ammoPickups;
     private List<GameObject> healthPickupsToRemove;
     private List<GameObject> ammoPickupsToRemove;
 
-    GameObject snitch;
+    public GameObject snitch;
 
     public float fov = 50;
     public float maxdistance = 100;
@@ -48,10 +77,7 @@ public class GameSimulation
 
 
     //some events
-    public TankEvent<TankController> healthPickupEvent;
-    public TankEvent<TankController> ammoPickupEvent;
-    public TankEvent<TankController> snitchPickupEvent;
-
+   
 
 
     public GameSimulation(GameSimRules ruleset)
@@ -72,9 +98,7 @@ public class GameSimulation
 
 
         //event setup
-        healthPickupEvent = new TankEvent<TankController>();
-        ammoPickupEvent = new TankEvent<TankController>();
-        snitchPickupEvent = new TankEvent<TankController>();
+        EventManager.Initialise();
 
     }
 
@@ -259,7 +283,7 @@ public class GameSimulation
 
             if(TrainingRoomMain.timeLeft.TotalSeconds < 120)
             {
-                if(snitch == null && GameFlags.SnitchEnabled)
+                if(!snitchSpawned && GameFlags.SnitchEnabled)
                 {
                     SpawnSnitch();
                 }
@@ -273,6 +297,7 @@ public class GameSimulation
     {
         snitch = GameObject.Instantiate(Resources.Load("Prefabs/Snitch")) as UnityEngine.GameObject;
         snitch.transform.position = RandomArenaPosition();
+        snitchSpawned = true;
     }
 
     private void HandlePickupLogic()
@@ -291,7 +316,7 @@ public class GameSimulation
                     GameObject.Destroy(pickup);
                     Debug.Log(t.Name + " picks up health");
 
-                    healthPickupEvent.Invoke(t);
+                    EventManager.healthPickupEvent.Invoke(t);
                     
 
 
@@ -310,7 +335,7 @@ public class GameSimulation
                     GameObject.Destroy(pickup);
                     Debug.Log(t.Name + " picks up ammo");
 
-                    ammoPickupEvent.Invoke(t);
+                    EventManager.ammoPickupEvent.Invoke(t);
                 }
             }
         }
@@ -404,15 +429,18 @@ public class GameSimulation
 
         }
 
-        if (CheckIfInFoV(t, snitch.transform))
+        if (snitch != null)
         {
-            GameObjectState s = new GameObjectState();
-            s.Type = "Snitch";
-            s.X = snitch.transform.position.x;
-            s.Y = snitch.transform.position.z;
-            objectsToAdd.Add(s);
-        }
 
+            if (CheckIfInFoV(t, snitch.transform))
+            {
+                GameObjectState s = new GameObjectState();
+                s.Type = "Snitch";
+                s.X = snitch.transform.position.x;
+                s.Y = snitch.transform.position.z;
+                objectsToAdd.Add(s);
+            }
+        }
 
         objectsInFieldOfView[t.Token] = objectsToAdd;
     }
@@ -458,6 +486,10 @@ public class GameSimulation
 
     internal void RecordFrag(TankController victim, TankController killer)
     {
+
+        EventManager.killEvent.Invoke(killer);
+        EventManager.destroyedEvent.Invoke(victim);
+
         Debug.Log(victim.Name + " killed by " + killer.Name);
         victim.Deaths++;
 
