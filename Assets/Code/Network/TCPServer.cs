@@ -204,7 +204,7 @@ public class TCPServer
                 {
                     if (t.Token == GetTokenFromEndpoint(client))
                     {
-                        var obj = new GameObjectState() { Name = t.Name, Type = "Tank", Health = t.Health, Ammo = t.Ammo, X = t.X, Y = t.Y, Heading = t.Heading, TurretHeading = t.TurretHeading };
+                        var obj = GameSimulation.CreateTankState(t);
                         var json = JsonUtility.ToJson(obj);
                         SendMessage(client, MessageFactory.CreateObjectUpdateMessage(json));
                         return;

@@ -7,6 +7,7 @@ using UnityEngine.Events;
 
 public class GameObjectState
 {
+    public int Id;
     public string Name;
     public string Type;
     public float X;
@@ -408,6 +409,7 @@ public class GameSimulation
             if (CheckIfInFoV(t, healthPickup.transform))
             {
                 GameObjectState s = new GameObjectState();
+                s.Id = healthPickup.GetInstanceID();
                 s.Type = "HealthPickup";
                 s.X = healthPickup.transform.position.x;
                 s.Y = healthPickup.transform.position.z;
@@ -421,6 +423,7 @@ public class GameSimulation
             if (CheckIfInFoV(t, ammoPickup.transform))
             {
                 GameObjectState s = new GameObjectState();
+                s.Id = ammoPickup.GetInstanceID();
                 s.Type = "AmmoPickup";
                 s.X = ammoPickup.transform.position.x;
                 s.Y = ammoPickup.transform.position.z;
@@ -435,6 +438,7 @@ public class GameSimulation
             if (CheckIfInFoV(t, snitch.transform))
             {
                 GameObjectState s = new GameObjectState();
+                s.Id = snitch.GetInstanceID();
                 s.Type = "Snitch";
                 s.X = snitch.transform.position.x;
                 s.Y = snitch.transform.position.z;
@@ -503,9 +507,10 @@ public class GameSimulation
 
     }
 
-    private static GameObjectState CreateTankState(TankController t)
+    public static GameObjectState CreateTankState(TankController t)
     {
         GameObjectState s = new GameObjectState();
+        s.Id = t.gameObject.GetInstanceID();
         s.Ammo = t.Ammo;
         s.Heading = t.Heading;
         s.Health = t.Health;
