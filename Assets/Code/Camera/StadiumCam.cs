@@ -10,7 +10,7 @@ public class StadiumCam : MonoBehaviour
     private GameObject currentTarget;
     private Vector3 targetPoint;
 
-    private float rotationSpeed = 0.3f;
+    private float rotationSpeed = 0.6f;
     private float zoomDistance = 0.1f;
     private float zoomChange;
     private Vector3 desiredPosition;

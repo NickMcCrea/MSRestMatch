@@ -10,15 +10,19 @@ public enum CommandType
 {
     PlayerCreate,
     PlayerCreateTest,
-    Forward,
-    Reverse,
-    Right,
-    Left,
-    TurretRight,
-    TurretLeft,
-    Stop,
+    ToggleForward,
+    ToggleReverse,
+    ToggleRight,
+    ToggleLeft,
+    ToggleTurretRight,
+    ToggleTurretLeft,
+    FullStop,
+    StopMove,
+    StopTurn,
     StopTurret,
     Fire,
     GetState,
-    Despawn
+    Despawn,
+    TurnToHeading,
+    TurnTurretToHeading
 }

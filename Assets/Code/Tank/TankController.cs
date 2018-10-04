@@ -61,6 +61,11 @@ public class TankController : MonoBehaviour
     AudioSource shellHit;
     AudioSource tankExplosion;
     private List<GameObject> pointObjects;
+    private bool autoTurn = false;
+    private bool autoTurretTurn = false;
+    private float desiredHeading = 0;
+    private float desiredTurretHeading = 0;
+
 
     // Use this for initialization
     public virtual void Start()
@@ -115,6 +120,32 @@ public class TankController : MonoBehaviour
             if (toggleTurretRight)
                 TurretRight();
 
+
+            if (autoTurn)
+            {
+                if (IsTurnLeft(Heading, desiredHeading))
+                    TurnLeft();
+                else
+                    TurnRight();
+
+                float diff = Heading - desiredHeading;
+                if (Math.Abs(diff) < 2)
+                    autoTurn = false;
+            }
+
+            if (autoTurretTurn)
+            {
+                if (IsTurnLeft(TurretHeading, desiredTurretHeading))
+                    TurretLeft();
+                else
+                    TurretRight();
+
+                float diff = TurretHeading - desiredTurretHeading;
+                if (Math.Abs(diff) < 2)
+                    autoTurretTurn = false;
+            }
+
+
             Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
             transform.rotation = Quaternion.Slerp(transform.rotation, q, Time.deltaTime * reorientateSpeed);
 
@@ -145,11 +176,13 @@ public class TankController : MonoBehaviour
         //A = atan2(V.y, V.x)
         Heading = (float)Math.Atan2(transform.forward.z, transform.forward.x);
         Heading = Heading * Mathf.Rad2Deg;
-        Heading = (Heading + 360) % 360;
+        Heading = (Heading - 360) % 360;
+        Heading = Math.Abs(Heading);
 
         TurretHeading = (float)Math.Atan2(-turret.transform.up.z, -turret.transform.up.x);
         TurretHeading = TurretHeading * Mathf.Rad2Deg;
-        TurretHeading = (TurretHeading + 360) % 360;
+        TurretHeading = (TurretHeading - 360) % 360;
+        TurretHeading = Math.Abs(TurretHeading);
 
 
         TurretForwardX = turret.transform.up.x;
@@ -279,7 +312,7 @@ public class TankController : MonoBehaviour
             return;
 
         currentState = TankState.destroyed;
-        Stop();
+        FullStop();
         StopTurret();
 
         ClearUnbankedPoints();
@@ -335,13 +368,31 @@ public class TankController : MonoBehaviour
         toggleTurretLeft = true;
         toggleTurretRight = false;
     }
-    public void Stop()
+
+    public void StopTurn()
+    {
+        toggleLeft = false;
+        toggleRight = false;
+        autoTurn = false;
+      
+    }
+
+    public void StopMove()
+    {
+        toggleForward = false;
+        toggleReverse = false;
+    }
+
+    public void FullStop()
     {
         toggleForward = false;
         toggleReverse = false;
         toggleLeft = false;
         toggleRight = false;
+        autoTurretTurn = false;
+        autoTurn = false;
     }
+
     public void StopTurret()
     {
         toggleTurretLeft = false;
@@ -392,12 +443,31 @@ public class TankController : MonoBehaviour
     }
     public void TurretLeft()
     {
-        turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
+        turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
     }
     public void TurretRight()
     {
 
-        turret.transform.RotateAround(transform.up, -barrelRotateSpeed * Time.deltaTime);
+        turret.transform.RotateAround(transform.up, barrelRotateSpeed * Time.deltaTime);
+    }
+
+    bool IsTurnLeft(float currentHeading, float desiredHeading)
+    {
+        float diff = desiredHeading - currentHeading;
+        return diff > 0 ? diff > 180 : diff >= -180;
+    }
+
+
+    public void TurnTurretToHeading(float heading)
+    {
+        desiredTurretHeading = heading;
+        autoTurretTurn = true;
+    }
+
+    public void TurnToHeading(float heading)
+    {
+        desiredHeading = heading;
+        autoTurn = true;
     }
 
     public void Fire()

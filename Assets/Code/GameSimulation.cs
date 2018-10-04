@@ -555,38 +555,47 @@ public class GameSimulation
                 var tanktest = CreatePlayerTest(createtest);
                 break;
 
-            case (CommandType.Forward):
+            case (CommandType.ToggleForward):
                 if (t != null)
                     t.ToggleForward();
                 break;
-            case (CommandType.Reverse):
+            case (CommandType.ToggleReverse):
                 if (t != null)
                     t.ToggleReverse();
                 break;
-            case (CommandType.Right):
+            case (CommandType.ToggleRight):
                 if (t != null)
                     t.ToggleRight();
                 break;
-            case (CommandType.Left):
+            case (CommandType.ToggleLeft):
                 if (t != null)
                     t.ToggleLeft();
                 break;
-            case (CommandType.TurretLeft):
+            case (CommandType.ToggleTurretLeft):
                 if (t != null)
                     t.ToggleTurretLeft();
                 break;
-            case (CommandType.TurretRight):
+            case (CommandType.ToggleTurretRight):
                 if (t != null)
                     t.ToggleTurretRight();
                 break;
-            case (CommandType.Stop):
+            case (CommandType.FullStop):
                 if (t != null)
-                    t.Stop();
+                    t.FullStop();
                 break;
             case (CommandType.StopTurret):
                 if (t != null)
                     t.StopTurret();
                 break;
+            case (CommandType.StopMove):
+                if (t != null)
+                    t.StopMove();
+                break;
+            case (CommandType.StopTurn):
+                if (t != null)
+                    t.StopTurn();
+                break;
+
             case (CommandType.Fire):
                 if (t != null)
                     t.Fire();

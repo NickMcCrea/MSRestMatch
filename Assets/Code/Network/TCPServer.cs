@@ -301,31 +301,38 @@ public class TCPServer
                 case (NetworkMessageType.stopTurret):
                     sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.StopTurret, Token = clientId, Payload = null });
                     break;
-
-                case (NetworkMessageType.stop):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Stop, Token = clientId, Payload = null });
+                case (NetworkMessageType.stopMove):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.StopMove, Token = clientId, Payload = null });
                     break;
 
-                case (NetworkMessageType.turretLeft):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretLeft, Token = clientId, Payload = null });
-                    break;
-                case (NetworkMessageType.turretRight):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurretRight, Token = clientId, Payload = null });
+                case (NetworkMessageType.stopTurn):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.StopTurn, Token = clientId, Payload = null });
                     break;
 
-                case (NetworkMessageType.left):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Left, Token = clientId, Payload = null });
+                case (NetworkMessageType.stopAll):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.FullStop, Token = clientId, Payload = null });
                     break;
 
-                case (NetworkMessageType.right):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Right, Token = clientId, Payload = null });
+                case (NetworkMessageType.toggleTurretLeft):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleTurretLeft, Token = clientId, Payload = null });
+                    break;
+                case (NetworkMessageType.toggleTurretRight):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleTurretRight, Token = clientId, Payload = null });
                     break;
 
-                case (NetworkMessageType.reverse):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Reverse, Token = clientId, Payload = null });
+                case (NetworkMessageType.toggleLeft):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleLeft, Token = clientId, Payload = null });
                     break;
-                case (NetworkMessageType.forward):
-                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.Forward, Token = clientId, Payload = null });
+
+                case (NetworkMessageType.toggleRight):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleRight, Token = clientId, Payload = null });
+                    break;
+
+                case (NetworkMessageType.toggleReverse):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleReverse, Token = clientId, Payload = null });
+                    break;
+                case (NetworkMessageType.toggleForward):
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleForward, Token = clientId, Payload = null });
                     break;
 
 
@@ -460,20 +467,26 @@ public enum NetworkMessageType
     createTank = 1,
     despawnTank = 2,
     fire = 3,
-    forward = 4,
-    reverse = 5,
-    left = 6,
-    right = 7,
-    stop = 8,
-    turretLeft = 9,
-    turretRight = 10,
-    stopTurret = 11,
-    objectUpdate = 12,
-    healthPickup = 13,
-    ammoPickup = 14,
-    snitchPickup = 15,
-    destroyed = 16,
-    enteredGoal = 17,
-    kill = 18
+    toggleForward = 4,
+    toggleReverse = 5,
+    toggleLeft = 6,
+    toggleRight = 7,
+    toggleTurretLeft = 8,
+    toggleTurretRight = 9,
+    turnTurretToHeading = 10,
+    turnToHeading = 11,
+    moveForwardDistance = 12,
+    moveBackwardsDistance = 13,
+    stopAll = 14,
+    stopTurn = 15,
+    stopMove = 16,
+    stopTurret = 17,
+    objectUpdate = 18,
+    healthPickup = 19,
+    ammoPickup = 20,
+    snitchPickup = 21,
+    destroyed = 22,
+    enteredGoal = 23,
+    kill = 24
 
 }

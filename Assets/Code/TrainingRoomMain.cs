@@ -154,6 +154,17 @@ public class TrainingRoomMain : MonoBehaviour
             simulation.ClearAllNonPlayerTanks();
         }
 
+        if (Input.GetKeyUp(KeyCode.T))
+        {
+            var tankController = simulation.GetNextTank().GetComponent<TankController>();
+            tankController.TurnToHeading((tankController.Heading + 10 ) %360);
+        }
+        if (Input.GetKeyUp(KeyCode.Y))
+        {
+            var tankController = simulation.GetNextTank().GetComponent<TankController>();
+            tankController.TurnToHeading((tankController.Heading - 10) % 360);
+        }
+
 
         if (Input.GetKeyUp(KeyCode.Delete))
         {
