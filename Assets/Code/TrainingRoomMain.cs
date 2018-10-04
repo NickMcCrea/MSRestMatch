@@ -146,7 +146,7 @@ public class TrainingRoomMain : MonoBehaviour
                 GameStart();
 
             aiTankCount++;
-            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, false);
+            simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, true);
         }
 
         if (Input.GetKeyUp(KeyCode.Backspace))

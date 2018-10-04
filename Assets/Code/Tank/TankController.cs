@@ -18,8 +18,8 @@ public class TankController : MonoBehaviour
     public bool infiniteAmmo = false;
     public Color mainTankColor;
     public TankState currentState = TankState.normal;
-    public volatile int Health = 10;
-    public volatile int Ammo = 10;
+    public volatile int Health;
+    public volatile int Ammo;
     public volatile float X;
     public volatile float Y;
     public volatile float ForwardX;
@@ -60,6 +60,7 @@ public class TankController : MonoBehaviour
     AudioSource fireSound;
     AudioSource shellHit;
     AudioSource tankExplosion;
+    private List<GameObject> pointObjects;
 
     // Use this for initialization
     public virtual void Start()
@@ -87,6 +88,9 @@ public class TankController : MonoBehaviour
 
 
         em.enabled = false;
+
+        pointObjects = new List<GameObject>();
+
     }
 
     // Update is called once per frame
@@ -163,6 +167,12 @@ public class TankController : MonoBehaviour
         if (infiniteHealth)
             ReplenishHealth();
 
+        int i = 0;
+        foreach(GameObject o in pointObjects)
+        {
+            o.transform.position = transform.position + new Vector3(0, 5 + (i * 0.5f), 0);
+            i++;
+        }
 
     }
 
@@ -272,6 +282,7 @@ public class TankController : MonoBehaviour
         Stop();
         StopTurret();
 
+        ClearUnbankedPoints();
 
         var explosivo1 = Instantiate(Resources.Load("Prefabs/Explosion")) as UnityEngine.GameObject;
         explosivo1.transform.position = transform.position;
@@ -285,6 +296,13 @@ public class TankController : MonoBehaviour
         tankExplosion.Play();
 
         destroyTime = DateTime.Now;
+    }
+
+    public void AddUnbankedPoint()
+    {
+        UnbankedPoints++;
+        var ob = GameObject.Instantiate(Resources.Load("Prefabs/UnbankedPoint") as GameObject);
+        pointObjects.Add(ob);
     }
 
     public void ToggleForward()
@@ -359,7 +377,7 @@ public class TankController : MonoBehaviour
         if (transform.position.y > -1.75f)
             return;
         root.transform.Rotate(Vector3.up, 100 * Time.deltaTime);
-       
+
 
     }
     public void TurnLeft()
@@ -422,16 +440,17 @@ public class TankController : MonoBehaviour
         if (other.gameObject.name == "GoalA" || other.gameObject.name == "GoalB")
         {
             Points += UnbankedPoints;
-            UnbankedPoints = 0;
+
+            ClearUnbankedPoints();
 
             EventManager.goalEvent.Invoke(this);
 
             //do we have a snitch?
-            if(Sim.snitch != null)
+            if (Sim.snitch != null)
             {
-                if(Sim.snitch.GetComponent<SnitchBehaviour>().collector != null)
+                if (Sim.snitch.GetComponent<SnitchBehaviour>().collector != null)
                 {
-                    if(Sim.snitch.GetComponent<SnitchBehaviour>().collector == this)
+                    if (Sim.snitch.GetComponent<SnitchBehaviour>().collector == this)
                     {
                         //we took the snitch to a goal!
                         Debug.Log("SNITCH COLLECTED SUCCESSFULLY!");
@@ -444,6 +463,17 @@ public class TankController : MonoBehaviour
         }
     }
 
+    private void ClearUnbankedPoints()
+    {
+        UnbankedPoints = 0;
+
+        //remove unbanked point objects
+        foreach (GameObject o in pointObjects)
+        {
+            GameObject.Destroy(o);
+        }
+        pointObjects.Clear();
+    }
 
 }
 

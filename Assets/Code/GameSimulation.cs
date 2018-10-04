@@ -494,7 +494,10 @@ public class GameSimulation
         victim.Deaths++;
 
         if (ConfigValueStore.GetBoolValue("kill_capture_mode"))
-            killer.UnbankedPoints++;
+        {
+            killer.AddUnbankedPoint();
+            
+        }
         else
             killer.Points++;
 
