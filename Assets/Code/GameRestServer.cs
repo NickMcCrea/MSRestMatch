@@ -6,7 +6,10 @@ using System.ServiceModel.Web;
 using UnityEngine;
 
 
-
+public class MovementParameter
+{
+    public float Amount;
+}
 
 public class PlayerCreate
 {

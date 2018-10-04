@@ -533,6 +533,7 @@ public class GameSimulation
             if (command.Type != CommandType.PlayerCreate)
                 return;
 
+        MovementParameter p = null;
 
         switch (command.Type)
         {
@@ -554,6 +555,34 @@ public class GameSimulation
                 PlayerCreateTest createtest = command.Payload as PlayerCreateTest;
                 var tanktest = CreatePlayerTest(createtest);
                 break;
+
+            case (CommandType.TurnToHeading):
+                p = command.Payload as MovementParameter;
+                if (t != null)
+                    t.TurnToHeading(p.Amount);
+                break;
+
+            case (CommandType.TurnTurretToHeading):
+                p = command.Payload as MovementParameter;
+                if (t != null)
+                    t.TurnTurretToHeading(p.Amount);
+                break;
+
+
+            case (CommandType.MoveForwardDistance):
+                p = command.Payload as MovementParameter;
+                if (t != null)
+                    t.MoveDistance(p.Amount);
+                break;
+
+
+            case (CommandType.MoveBackDistance):
+                p = command.Payload as MovementParameter;
+                if (t != null)
+                    t.MoveDistance(-p.Amount);
+                break;
+
+
 
             case (CommandType.ToggleForward):
                 if (t != null)
@@ -600,6 +629,8 @@ public class GameSimulation
                 if (t != null)
                     t.Fire();
                 break;
+
+
         }
     }
 

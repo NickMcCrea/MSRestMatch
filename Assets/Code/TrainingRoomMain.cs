@@ -165,6 +165,18 @@ public class TrainingRoomMain : MonoBehaviour
             tankController.TurnToHeading((tankController.Heading - 10) % 360);
         }
 
+        if (Input.GetKeyUp(KeyCode.G))
+        {
+            var tankController = simulation.GetNextTank().GetComponent<TankController>();
+            tankController.MoveDistance(10);
+        }
+        if (Input.GetKeyUp(KeyCode.H))
+        {
+            var tankController = simulation.GetNextTank().GetComponent<TankController>();
+            tankController.MoveDistance(-10);
+        }
+
+
 
         if (Input.GetKeyUp(KeyCode.Delete))
         {

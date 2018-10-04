@@ -63,9 +63,11 @@ public class TankController : MonoBehaviour
     private List<GameObject> pointObjects;
     private bool autoTurn = false;
     private bool autoTurretTurn = false;
+    private bool autoMove = false;
     private float desiredHeading = 0;
     private float desiredTurretHeading = 0;
-
+    private float desiredDistance = 0;
+    private Vector3 oldPosition;
 
     // Use this for initialization
     public virtual void Start()
@@ -145,9 +147,48 @@ public class TankController : MonoBehaviour
                     autoTurretTurn = false;
             }
 
+            if (autoMove)
+            {
+                if(desiredDistance > 0)
+                {
+                   
+
+                    Forward();
+
+                    float distanceTravelled = (oldPosition - transform.position).magnitude;
+                    if (desiredDistance > distanceTravelled)
+                    {
+                        desiredDistance -= distanceTravelled;
+                    }
+                    else
+                    {
+                        autoMove = false;
+                    }
+                }
+                else
+                {
+                 
+                    Reverse();
+
+                    float distanceTravelled = (oldPosition - transform.position).magnitude;
+                    if (Math.Abs(desiredDistance) > distanceTravelled)
+                    {
+                        desiredDistance += distanceTravelled;
+                    }
+                    else
+                    {
+                        autoMove = false;
+                    }
+                }
+
+
+            }
+
 
             Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
             transform.rotation = Quaternion.Slerp(transform.rotation, q, Time.deltaTime * reorientateSpeed);
+
+            oldPosition = transform.position;
 
         }
         else if (currentState == TankState.destroyed)
@@ -470,6 +511,14 @@ public class TankController : MonoBehaviour
         autoTurn = true;
     }
 
+    internal void MoveDistance(float amount)
+    {
+        autoMove = true;
+        desiredDistance = amount;
+    }
+
+    
+
     public void Fire()
     {
         TimeSpan timeSinceLastFired = DateTime.Now - lastFireTime;
@@ -545,6 +594,7 @@ public class TankController : MonoBehaviour
         pointObjects.Clear();
     }
 
+   
 }
 
 

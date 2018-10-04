@@ -24,5 +24,7 @@ public enum CommandType
     GetState,
     Despawn,
     TurnToHeading,
-    TurnTurretToHeading
+    TurnTurretToHeading,
+    MoveForwardDistance,
+    MoveBackDistance
 }

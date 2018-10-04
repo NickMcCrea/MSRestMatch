@@ -335,7 +335,22 @@ public class TCPServer
                     sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.ToggleForward, Token = clientId, Payload = null });
                     break;
 
-
+                case (NetworkMessageType.turnToHeading):
+                    MovementParameter movement = JsonUtility.FromJson<MovementParameter>((string)newMessage.data);
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurnToHeading, Token = clientId, Payload = movement });
+                    break;
+                case (NetworkMessageType.turnTurretToHeading):
+                    MovementParameter movement2 = JsonUtility.FromJson<MovementParameter>((string)newMessage.data);
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.TurnTurretToHeading, Token = clientId, Payload = movement2 });
+                    break;
+                case (NetworkMessageType.moveForwardDistance):
+                    MovementParameter movement3 = JsonUtility.FromJson<MovementParameter>((string)newMessage.data);
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.MoveForwardDistance, Token = clientId, Payload = movement3 });
+                    break;
+                case (NetworkMessageType.moveBackwardsDistance):
+                    MovementParameter movement4 = JsonUtility.FromJson<MovementParameter>((string)newMessage.data);
+                    sim.enqueuedCommands.Enqueue(new GameCommand() { Type = CommandType.MoveBackDistance, Token = clientId, Payload = movement4 });
+                    break;
             }
         }
         catch (Exception ex)
@@ -429,7 +444,7 @@ public static class MessageFactory
     public static byte[] CreateObjectUpdateMessage(string json)
     {
         byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
-        return AddTypeAndLengthToArray(clientMessageAsByteArray, 12);
+        return AddTypeAndLengthToArray(clientMessageAsByteArray, (byte)NetworkMessageType.objectUpdate);
     }
 
     public static byte[] AddTypeAndLengthToArray(byte[] bArray, byte type)
@@ -459,6 +474,8 @@ public struct CreatePlayer
     public string Name;
 
 }
+
+
 
 
 public enum NetworkMessageType
