@@ -12,8 +12,15 @@ public class TankController : MonoBehaviour
         normal,
         destroyed
     }
-
+    private float barrelRotateSpeed = 2.5f;
+    private float reorientateSpeed = 10f;
+    private float fireInterval = 2;
+    private float projectileForce = 2000;
+    private readonly int startingHealth = 10;
+    private readonly int startingAmmo = 10;
     private const int SnitchPoints = 10;
+    private const int speed = 10;
+    private const int turnRate = 100;
     public bool infiniteHealth = false;
     public bool infiniteAmmo = false;
     public Color mainTankColor;
@@ -36,16 +43,8 @@ public class TankController : MonoBehaviour
     public GameObject turret;
     public GameObject barrel;
     public GameObject firingPoint;
-    private float barrelRotateSpeed = 0.5f;
-    private float reorientateSpeed = 10f;
     private DateTime lastFireTime = DateTime.Now;
-    private float fireInterval = 2;
-    private float projectileForce = 2000;
-    private int projectileLifetime = 4;
     private DateTime destroyTime;
-    private readonly int startingHealth = 10;
-    private readonly int startingAmmo = 10;
-    private Dictionary<GameObject, DateTime> projectiles;
     private bool toggleForward;
     private bool toggleReverse;
     private bool toggleLeft;
@@ -80,8 +79,7 @@ public class TankController : MonoBehaviour
         uiLabel = Instantiate(Resources.Load("Prefabs/TextLabel")) as UnityEngine.GameObject;
 
         uiLabel.GetComponent<TextMeshPro>().text = Name;
-
-        projectiles = new Dictionary<UnityEngine.GameObject, DateTime>();
+        
         Health = startingHealth;
         Ammo = startingAmmo;
         smokeParticleSystem = root.transform.Find("main").gameObject.GetComponent<ParticleSystem>();
@@ -105,8 +103,7 @@ public class TankController : MonoBehaviour
     {
 
 
-        ManageProjectiles();
-
+      
         if (currentState == TankState.normal)
         {
             if (toggleForward)
@@ -250,37 +247,9 @@ public class TankController : MonoBehaviour
 
     }
 
-    private void ManageProjectiles()
-    {
+  
 
-        ClearOldProjectiles();
-    }
-
-    private void ClearOldProjectiles()
-    {
-        if (projectiles == null)
-            return;
-        if (projectiles.Count == 0)
-            return;
-
-        UnityEngine.GameObject destroyThis = null;
-        foreach (UnityEngine.GameObject p in projectiles.Keys)
-        {
-            TimeSpan timeSinceSpawn = DateTime.Now - projectiles[p];
-            if (timeSinceSpawn.TotalSeconds > projectileLifetime)
-            {
-                destroyThis = p;
-                break;
-            }
-        }
-
-        if (destroyThis != null)
-        {
-            projectiles.Remove(destroyThis);
-            UnityEngine.GameObject.Destroy(destroyThis);
-
-        }
-    }
+    
 
     internal void ReActivate()
     {
@@ -317,9 +286,7 @@ public class TankController : MonoBehaviour
         var go = collision.collider.gameObject;
         if (go.tag.Contains("projectile"))
         {
-            //it's one of ours colliding on the way out of the barrel. Ignore.
-            if (projectiles != null && projectiles.ContainsKey(go))
-                return;
+          
 
             CalculateDamage(go);
             UnityEngine.GameObject.Destroy(go);
@@ -452,23 +419,22 @@ public class TankController : MonoBehaviour
         if (transform.position.y > -1.75f)
             return;
 
-
-        root.GetComponent<Rigidbody>().MovePosition(root.transform.position + root.transform.forward * Time.deltaTime * 5);
+        root.transform.position = root.transform.position + root.transform.forward * Time.deltaTime * speed;
+      
     }
     public void Reverse()
     {
         if (transform.position.y > -1.75f)
             return;
-        //root.GetComponent<Rigidbody>().AddForce(-root.transform.forward * tankMovementForce);
-        root.GetComponent<Rigidbody>().MovePosition(root.transform.position - root.transform.forward * Time.deltaTime * 5);
 
+        root.transform.position = root.transform.position - root.transform.forward * Time.deltaTime * speed;
 
     }
     public void TurnRight()
     {
         if (transform.position.y > -1.75f)
             return;
-        root.transform.Rotate(Vector3.up, 100 * Time.deltaTime);
+        root.transform.Rotate(Vector3.up, turnRate * Time.deltaTime);
 
 
     }
@@ -477,10 +443,8 @@ public class TankController : MonoBehaviour
         if (transform.position.y > -1.75f)
             return;
 
-        root.transform.Rotate(Vector3.up, -100 * Time.deltaTime);
-        //root.GetComponent<Rigidbody>().AddTorque(root.transform.up * -torqueForce);
-
-
+        root.transform.Rotate(Vector3.up, -turnRate * Time.deltaTime);
+        
     }
     public void TurretLeft()
     {
@@ -540,11 +504,10 @@ public class TankController : MonoBehaviour
         projectile.GetComponent<TrailRenderer>().startColor = Color.blue;
         projectile.GetComponent<TrailRenderer>().endColor = Color.blue;
 
-
+        GameObject.Destroy(projectile, 10);
 
         Ammo--;
-        projectiles.Add(projectile, lastFireTime);
-
+        
         fireSound.Play();
 
     }

@@ -154,7 +154,7 @@ public class GameSimulation
         t.GetComponent<ManualTankController>().Ruleset = rules;
         t.GetComponent<ManualTankController>().Sim = this;
         t.GetComponent<ManualTankController>().infiniteAmmo = false;
-        t.GetComponent<DummyTank>().infiniteHealth = false;
+        t.GetComponent<ManualTankController>().infiniteHealth = false;
         tankControllers.Add(t.GetComponent<ManualTankController>());
         return t;
     }

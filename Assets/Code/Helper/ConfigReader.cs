@@ -49,7 +49,7 @@ public static class ConfigValueStore
 
     private static void LoadDefaults()
     {
-        defaultKvps.Add("ipaddress", "127.0.0.1");
+        defaultKvps.Add("ipaddress", "0.0.0.0");
         defaultKvps.Add("port", "8052");
         defaultKvps.Add("use_port_in_token", "true");
         defaultKvps.Add("game_time", "300");

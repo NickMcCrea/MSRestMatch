@@ -9,7 +9,8 @@ public class StadiumCam : MonoBehaviour
     private CameraMode currentCameraMode = CameraMode.centerCircle;
     private GameObject currentTarget;
     private Vector3 targetPoint;
-
+    private Vector3 originalPos;
+    private Quaternion originalRotation;
     private float rotationSpeed = 0.6f;
     private float zoomDistance = 0.1f;
     private float zoomChange;
@@ -26,6 +27,8 @@ public class StadiumCam : MonoBehaviour
     void Start()
     {
 
+        originalPos = transform.position;
+        originalRotation = transform.rotation;
       
         targetPoint = Vector3.zero;
 
@@ -166,5 +169,12 @@ public class StadiumCam : MonoBehaviour
         currentTarget = GameObject.Find("ScoreboardCanvas");
         currentCameraMode = CameraMode.leaderboard;
         Debug.Log("Cam: Leaderboard mode");
+    }
+
+    public void ResetCamera()
+    {
+        transform.SetPositionAndRotation(originalPos, originalRotation);
+        currentCameraMode = CameraMode.centerCircle;
+
     }
 }
