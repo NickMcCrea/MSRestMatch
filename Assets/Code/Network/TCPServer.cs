@@ -29,7 +29,7 @@ public class TCPServer
         ipAddress = ConfigValueStore.GetValue("ipaddress");
         port = Int32.Parse(ConfigValueStore.GetValue("port"));
 
-        usePortInToken = ConfigValueStore.GetBoolValue("use_port_in_token");
+        usePortInToken = true;
 
         sim = simulation;
         messages = new Queue<NetworkMessage>();

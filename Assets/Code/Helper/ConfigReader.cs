@@ -54,7 +54,6 @@ public static class ConfigValueStore
     {
         defaultKvps.Add("ipaddress", "0.0.0.0");
         defaultKvps.Add("port", "8052");
-        defaultKvps.Add("use_port_in_token", "true");
         defaultKvps.Add("game_time", "300");
         defaultKvps.Add("kill_capture_mode", "true");
         defaultKvps.Add("snitch_enabled", "true");
