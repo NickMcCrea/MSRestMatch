@@ -78,7 +78,7 @@ public class AITankController : TankController
     {
 
         Vector3 vecToTarget = closest.transform.position - transform.position;
-        float dotBetweenForwardAndTarget = Vector3.Dot(vecToTarget, -turret.transform.right);
+        float dotBetweenForwardAndTarget = Vector3.Dot(vecToTarget, turret.transform.right);
 
         if (dotBetweenForwardAndTarget > 0.1f)
             TurretRight();
