@@ -13,31 +13,31 @@ public class ManualTankController : TankController {
 	void Update () {
 
         base.Update();
-        if (Input.GetKey(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.W))
         {
             Forward();
         }
-        if (Input.GetKey(KeyCode.DownArrow))
+        if (Input.GetKey(KeyCode.S))
         {
             Reverse();
         }
-        if (Input.GetKey(KeyCode.RightArrow))
+        if (Input.GetKey(KeyCode.D))
         {
             TurnRight();
         }
-        if (Input.GetKey(KeyCode.LeftArrow))
+        if (Input.GetKey(KeyCode.A))
         {
             TurnLeft();
         }
-        if (Input.GetKey(KeyCode.Delete))
+        if (Input.GetKey(KeyCode.Q))
         {
             TurretLeft();
         }
-        if (Input.GetKey(KeyCode.PageDown))
+        if (Input.GetKey(KeyCode.E))
         {
             TurretRight();
         }
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.F))
         {
             Fire();
         }

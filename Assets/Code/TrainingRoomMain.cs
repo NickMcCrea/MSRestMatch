@@ -149,32 +149,40 @@ public class TrainingRoomMain : MonoBehaviour
             simulation.CreateAITank(GenerateRandomHexColorString(), "AITank" + aiTankCount, simulation.RandomArenaPosition(), false, true);
         }
 
+        if (Input.GetKeyUp(KeyCode.Alpha4))
+        {
+            if (currentGameState == GameState.notStarted)
+                GameStart();
+
+            simulation.CreateManualTank();
+        }
+
         if (Input.GetKeyUp(KeyCode.Backspace))
         {
             simulation.ClearAllNonPlayerTanks();
         }
 
-        if (Input.GetKeyUp(KeyCode.T))
-        {
-            var tankController = simulation.GetNextTank().GetComponent<TankController>();
-            tankController.TurnToHeading((tankController.Heading + 10 ) %360);
-        }
-        if (Input.GetKeyUp(KeyCode.Y))
-        {
-            var tankController = simulation.GetNextTank().GetComponent<TankController>();
-            tankController.TurnToHeading((tankController.Heading - 10) % 360);
-        }
+        //if (Input.GetKeyUp(KeyCode.T))
+        //{
+        //    var tankController = simulation.GetNextTank().GetComponent<TankController>();
+        //    tankController.TurnToHeading((tankController.Heading + 10 ) %360);
+        //}
+        //if (Input.GetKeyUp(KeyCode.Y))
+        //{
+        //    var tankController = simulation.GetNextTank().GetComponent<TankController>();
+        //    tankController.TurnToHeading((tankController.Heading - 10) % 360);
+        //}
 
-        if (Input.GetKeyUp(KeyCode.G))
-        {
-            var tankController = simulation.GetNextTank().GetComponent<TankController>();
-            tankController.MoveDistance(10);
-        }
-        if (Input.GetKeyUp(KeyCode.H))
-        {
-            var tankController = simulation.GetNextTank().GetComponent<TankController>();
-            tankController.MoveDistance(-10);
-        }
+        //if (Input.GetKeyUp(KeyCode.G))
+        //{
+        //    var tankController = simulation.GetNextTank().GetComponent<TankController>();
+        //    tankController.MoveDistance(10);
+        //}
+        //if (Input.GetKeyUp(KeyCode.H))
+        //{
+        //    var tankController = simulation.GetNextTank().GetComponent<TankController>();
+        //    tankController.MoveDistance(-10);
+        //}
 
 
 

@@ -70,10 +70,10 @@ public class StadiumCam : MonoBehaviour
             ZoomOut();
 
 
-        if (Input.GetKey(KeyCode.RightShift))
+        if (Input.GetKey(KeyCode.LeftShift))
             Up();
 
-        if (Input.GetKey(KeyCode.RightControl))
+        if (Input.GetKey(KeyCode.LeftControl))
             Down();
 
         Vector3 toTarget = targetPoint - transform.position;

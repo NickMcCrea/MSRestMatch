@@ -36,6 +36,20 @@ public class TankFactory : MonoBehaviour
         return tank;
     }
 
+    public GameObject CreateManualTank(string name, Vector3 startPos)
+    {
+        var tank = CreateTank<ManualTankController>("");
+
+
+        PlaceTank(tank, startPos);
+
+        tank.GetComponent<ManualTankController>().Name = name;
+        tank.GetComponent<ManualTankController>().Token = new Guid().ToString();
+
+
+        return tank;
+    }
+
     public GameObject CreateDummyTank(string mainColor, string name, Vector3 startingPosition)
     {
         var tank = CreateTank<DummyTank>(mainColor);

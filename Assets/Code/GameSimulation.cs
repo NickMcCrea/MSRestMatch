@@ -147,6 +147,18 @@ public class GameSimulation
         return toReturn;
     }
 
+    internal GameObject CreateManualTank()
+    {
+        var t = tankFactory.CreateManualTank("ManualTank", RandomArenaPosition());
+
+        t.GetComponent<ManualTankController>().Ruleset = rules;
+        t.GetComponent<ManualTankController>().Sim = this;
+        t.GetComponent<ManualTankController>().infiniteAmmo = false;
+        t.GetComponent<DummyTank>().infiniteHealth = false;
+        tankControllers.Add(t.GetComponent<ManualTankController>());
+        return t;
+    }
+
     internal GameObject CreatePlayerTest(PlayerCreateTest create)
     {
 
