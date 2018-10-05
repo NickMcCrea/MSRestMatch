@@ -75,9 +75,9 @@ public class GameSimulation
     public float fov = 50;
     public float maxdistance = 100;
     private float arenaSize = 80f;
-
-
-    //some events
+    int ammoPickupCount;
+    int healthPickupCount;
+  
 
 
 
@@ -97,6 +97,8 @@ public class GameSimulation
         healthPickupsToRemove = new List<GameObject>();
         ammoPickupsToRemove = new List<GameObject>();
 
+        ammoPickupCount = ConfigValueStore.GetIntValue("ammo_packs_active");
+        healthPickupCount = ConfigValueStore.GetIntValue("health_packs_active");
 
         //event setup
         EventManager.Initialise();
@@ -281,15 +283,15 @@ public class GameSimulation
 
         }
 
-        int pickupCount = 2;
+        
         if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.playing)
         {
 
-            if (healthPickups.Count < pickupCount)
+            if (healthPickups.Count < healthPickupCount)
             {
                 SpawnHealthPickup();
             }
-            if (ammoPickups.Count < pickupCount)
+            if (ammoPickups.Count < ammoPickupCount)
             {
                 SpawnAmmoPickup();
             }
