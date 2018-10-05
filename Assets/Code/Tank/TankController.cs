@@ -12,15 +12,17 @@ public class TankController : MonoBehaviour
         normal,
         destroyed
     }
-    private float barrelRotateSpeed = 2.5f;
-    private float reorientateSpeed = 10f;
-    private float fireInterval = 2;
-    private float projectileForce = 2000;
-    private readonly int startingHealth = 10;
-    private readonly int startingAmmo = 10;
-    private const int SnitchPoints = 10;
-    private const int speed = 10;
-    private const int turnRate = 100;
+    private float barrelRotateSpeed;
+    private float reorientateSpeed = 10;
+    private float fireInterval;
+    private float projectileForce;
+    private int startingHealth;
+    private int startingAmmo;
+    private int snitchGoalPoints;
+    private int snitchKillPoints;
+    private int killPoints;
+    private float speed;
+    private float turnRate;
     public bool infiniteHealth = false;
     public bool infiniteAmmo = false;
     public Color mainTankColor;
@@ -71,6 +73,8 @@ public class TankController : MonoBehaviour
     // Use this for initialization
     public virtual void Start()
     {
+
+
         root = this.gameObject;
         turret = root.transform.Find("top").gameObject;
         barrel = turret.transform.Find("barrel").gameObject;
@@ -79,9 +83,8 @@ public class TankController : MonoBehaviour
         uiLabel = Instantiate(Resources.Load("Prefabs/TextLabel")) as UnityEngine.GameObject;
 
         uiLabel.GetComponent<TextMeshPro>().text = Name;
-        
-        Health = startingHealth;
-        Ammo = startingAmmo;
+
+      
         smokeParticleSystem = root.transform.Find("main").gameObject.GetComponent<ParticleSystem>();
         var em = smokeParticleSystem.emission;
 
@@ -96,6 +99,22 @@ public class TankController : MonoBehaviour
 
         pointObjects = new List<GameObject>();
 
+
+        turnRate = ConfigValueStore.GetFloatValue("turn_speed");
+        barrelRotateSpeed = ConfigValueStore.GetFloatValue("turret_rotation_speed");
+        fireInterval = ConfigValueStore.GetIntValue("fire_interval");
+        projectileForce = ConfigValueStore.GetFloatValue("projectile_force");
+        speed = ConfigValueStore.GetFloatValue("movement_speed");
+        turnRate = ConfigValueStore.GetFloatValue("turn_speed");
+        startingAmmo = ConfigValueStore.GetIntValue("starting_ammo");
+        startingHealth = ConfigValueStore.GetIntValue("starting_health");
+        snitchGoalPoints = ConfigValueStore.GetIntValue("snitch_goal_points");
+        snitchKillPoints = ConfigValueStore.GetIntValue("snitch_kill_points");
+        killPoints = ConfigValueStore.GetIntValue("kill_points");
+
+
+        Health = startingHealth;
+        Ammo = startingAmmo;
     }
 
     // Update is called once per frame
@@ -103,7 +122,7 @@ public class TankController : MonoBehaviour
     {
 
 
-      
+
         if (currentState == TankState.normal)
         {
             if (toggleForward)
@@ -146,9 +165,9 @@ public class TankController : MonoBehaviour
 
             if (autoMove)
             {
-                if(desiredDistance > 0)
+                if (desiredDistance > 0)
                 {
-                   
+
 
                     Forward();
 
@@ -164,7 +183,7 @@ public class TankController : MonoBehaviour
                 }
                 else
                 {
-                 
+
                     Reverse();
 
                     float distanceTravelled = (oldPosition - transform.position).magnitude;
@@ -239,7 +258,7 @@ public class TankController : MonoBehaviour
             ReplenishHealth();
 
         int i = 0;
-        foreach(GameObject o in pointObjects)
+        foreach (GameObject o in pointObjects)
         {
             o.transform.position = transform.position + new Vector3(0, 5 + (i * 0.5f), 0);
             i++;
@@ -247,9 +266,9 @@ public class TankController : MonoBehaviour
 
     }
 
-  
 
-    
+
+
 
     internal void ReActivate()
     {
@@ -286,7 +305,7 @@ public class TankController : MonoBehaviour
         var go = collision.collider.gameObject;
         if (go.tag.Contains("projectile"))
         {
-          
+
 
             CalculateDamage(go);
             UnityEngine.GameObject.Destroy(go);
@@ -339,11 +358,22 @@ public class TankController : MonoBehaviour
         destroyTime = DateTime.Now;
     }
 
-    public void AddUnbankedPoint()
-    {
-        UnbankedPoints++;
-        var ob = GameObject.Instantiate(Resources.Load("Prefabs/UnbankedPoint") as GameObject);
-        pointObjects.Add(ob);
+    public void AddKillPoints()
+    {  
+        if (ConfigValueStore.GetBoolValue("kill_capture_mode"))
+        {
+            for(int i = 0; i < killPoints; i++)
+            {
+                UnbankedPoints++;
+                var ob = GameObject.Instantiate(Resources.Load("Prefabs/UnbankedPoint") as GameObject);
+                pointObjects.Add(ob);
+            }
+
+        }
+        else
+        {
+            Points += killPoints;
+        }
     }
 
     public void ToggleForward()
@@ -382,7 +412,7 @@ public class TankController : MonoBehaviour
         toggleLeft = false;
         toggleRight = false;
         autoTurn = false;
-      
+
     }
 
     public void StopMove()
@@ -420,7 +450,7 @@ public class TankController : MonoBehaviour
             return;
 
         root.transform.position = root.transform.position + root.transform.forward * Time.deltaTime * speed;
-      
+
     }
     public void Reverse()
     {
@@ -444,7 +474,7 @@ public class TankController : MonoBehaviour
             return;
 
         root.transform.Rotate(Vector3.up, -turnRate * Time.deltaTime);
-        
+
     }
     public void TurretLeft()
     {
@@ -481,8 +511,6 @@ public class TankController : MonoBehaviour
         desiredDistance = amount;
     }
 
-    
-
     public void Fire()
     {
         TimeSpan timeSinceLastFired = DateTime.Now - lastFireTime;
@@ -507,7 +535,7 @@ public class TankController : MonoBehaviour
         GameObject.Destroy(projectile, 10);
 
         Ammo--;
-        
+
         fireSound.Play();
 
     }
@@ -536,12 +564,25 @@ public class TankController : MonoBehaviour
                     {
                         //we took the snitch to a goal!
                         Debug.Log("SNITCH COLLECTED SUCCESSFULLY!");
-                        Points += SnitchPoints;
+                        Points += snitchGoalPoints;
                         GameObject.Destroy(Sim.snitch);
                     }
                 }
             }
 
+        }
+    }
+
+    internal void RewardSnitchPoints()
+    {
+        if (ConfigValueStore.GetBoolValue("kill_capture_mode"))
+        {
+            for (int i = 0; i < snitchKillPoints; i++)
+                AddKillPoints();
+        }
+        else
+        {
+            Points += snitchKillPoints;
         }
     }
 
@@ -557,7 +598,7 @@ public class TankController : MonoBehaviour
         pointObjects.Clear();
     }
 
-   
+
 }
 
 

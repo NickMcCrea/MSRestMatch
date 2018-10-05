@@ -19,7 +19,7 @@ public static class ConfigValueStore
         keyValuePairs = new Dictionary<string, string>();
         defaultKvps = new Dictionary<string, string>();
 
-
+       
         if (!Application.isEditor && File.Exists("tanks.ini"))
         {
             try
@@ -30,6 +30,7 @@ public static class ConfigValueStore
                 {
                     var pair = line.Split(':');
                     keyValuePairs.Add(pair[0], pair[1]);
+                    Debug.Log(pair[0] + ":" + pair[1]);
                 }
             }
             catch(Exception ex)
@@ -41,6 +42,8 @@ public static class ConfigValueStore
         {
             //some defaults
             LoadDefaults();
+
+            Debug.Log("LOADING DEFAULT CONFIG");
 
         }
 
@@ -56,6 +59,20 @@ public static class ConfigValueStore
         defaultKvps.Add("kill_capture_mode", "true");
         defaultKvps.Add("snitch_enabled", "true");
         defaultKvps.Add("snitch_spawn_threshold", "90");
+        defaultKvps.Add("snitch_goal_points", "20");
+        defaultKvps.Add("snitch_kill_points", "5");
+        defaultKvps.Add("kill_points", "1");
+        defaultKvps.Add("health_packs_active", "2");
+        defaultKvps.Add("ammo_packs_active", "2");
+        defaultKvps.Add("turret_rotation_speed", "2.5");
+        defaultKvps.Add("movement_speed", "10");
+        defaultKvps.Add("turn_speed", "100");
+        defaultKvps.Add("fire_interval", "2");
+        defaultKvps.Add("projectile_force", "2000");
+        defaultKvps.Add("starting_health", "10");
+        defaultKvps.Add("starting_ammo", "10");
+
+
     }
 
     public static string GetValue(string property)
@@ -85,6 +102,16 @@ public static class ConfigValueStore
             return int.Parse(keyValuePairs[property]);
         if (defaultKvps.ContainsKey(property))
             return int.Parse(defaultKvps[property]);
+
+        return 0;
+    }
+
+    public static float GetFloatValue(string property)
+    {
+        if (keyValuePairs.ContainsKey(property))
+            return float.Parse(keyValuePairs[property]);
+        if (defaultKvps.ContainsKey(property))
+            return float.Parse(defaultKvps[property]);
 
         return 0;
     }

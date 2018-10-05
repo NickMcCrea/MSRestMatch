@@ -78,7 +78,7 @@ public class GameSimulation
 
 
     //some events
-   
+
 
 
     public GameSimulation(GameSimRules ruleset)
@@ -294,9 +294,9 @@ public class GameSimulation
                 SpawnAmmoPickup();
             }
 
-            if(TrainingRoomMain.timeLeft.TotalSeconds < ConfigValueStore.GetIntValue("snitch_spawn_threshold"))
+            if (TrainingRoomMain.timeLeft.TotalSeconds < ConfigValueStore.GetIntValue("snitch_spawn_threshold"))
             {
-                if(!snitchSpawned && ConfigValueStore.GetBoolValue("snitch_enabled"))
+                if (!snitchSpawned && ConfigValueStore.GetBoolValue("snitch_enabled"))
                 {
                     SpawnSnitch();
                 }
@@ -330,7 +330,7 @@ public class GameSimulation
                     Debug.Log(t.Name + " picks up health");
 
                     EventManager.healthPickupEvent.Invoke(t);
-                    
+
 
 
                 }
@@ -509,13 +509,17 @@ public class GameSimulation
         Debug.Log(victim.Name + " killed by " + killer.Name);
         victim.Deaths++;
 
-        if (ConfigValueStore.GetBoolValue("kill_capture_mode"))
+        if (snitch != null)
         {
-            killer.AddUnbankedPoint();
-            
+            if (snitch.GetComponent<SnitchBehaviour>().collector == victim)
+            {
+                killer.RewardSnitchPoints();
+            }
         }
-        else
-            killer.Points++;
+
+        killer.AddKillPoints();
+
+
 
     }
 
