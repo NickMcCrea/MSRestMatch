@@ -29,10 +29,16 @@ public static class EventManager
     public static TankEvent<TankController> healthPickupEvent;
     public static TankEvent<TankController> ammoPickupEvent;
     public static TankEvent<TankController> snitchPickupEvent;
+    
 
     public static TankEvent<TankController> destroyedEvent;
     public static TankEvent<TankController> killEvent;
     public static TankEvent<TankController> goalEvent;
+    public static TankEvent<TankController> hitDetectedEvent;
+    public static TankEvent<TankController> successfulHitEvent;
+
+    public static UnityEvent snitchAppearedEvent;
+
 
     static EventManager()
     {
@@ -49,6 +55,11 @@ public static class EventManager
         destroyedEvent = new TankEvent<TankController>();
         killEvent = new TankEvent<TankController>();
         goalEvent = new TankEvent<TankController>();
+
+        snitchAppearedEvent = new UnityEvent();
+
+        hitDetectedEvent = new TankEvent<TankController>();
+        successfulHitEvent = new TankEvent<TankController>();
 
     }
 }
@@ -310,6 +321,7 @@ public class GameSimulation
 
     private void SpawnSnitch()
     {
+        EventManager.snitchAppearedEvent.Invoke();
         snitch = GameObject.Instantiate(Resources.Load("Prefabs/Snitch")) as UnityEngine.GameObject;
         snitch.transform.position = RandomArenaPosition();
         snitchSpawned = true;

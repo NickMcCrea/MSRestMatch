@@ -10,7 +10,7 @@ using UnityEngine;
 
 public class TCPServer
 {
-    private TimeSpan updateMessageInterval = new TimeSpan(0, 0, 0, 0, 300);
+
     private TcpListener tcpListener;
     private Thread networkThread;
     private readonly string ipAddress;
@@ -21,7 +21,8 @@ public class TCPServer
     private GameSimulation sim;
     DateTime ownStateLastUpdate = DateTime.Now;
     DateTime objectStateLastUpdate = DateTime.Now;
-    bool usePortInToken = false;
+    private DateTime lastGameTimeUpdate = DateTime.Now;
+    bool usePortInToken = true;
 
     public TCPServer(GameSimulation simulation)
     {
@@ -29,8 +30,7 @@ public class TCPServer
         ipAddress = ConfigValueStore.GetValue("ipaddress");
         port = Int32.Parse(ConfigValueStore.GetValue("port"));
 
-        usePortInToken = true;
-
+    
         sim = simulation;
         messages = new Queue<NetworkMessage>();
         networkThread = new Thread(new ThreadStart(StartServer));
@@ -158,6 +158,11 @@ public class TCPServer
             objectStateLastUpdate = DateTime.Now;
         }
 
+        if ((DateTime.Now - lastGameTimeUpdate).TotalSeconds > 30)
+        {
+            UpdateGameTimeRemaining();
+            lastGameTimeUpdate = DateTime.Now;
+        }
     }
 
     private void SendMessage(TcpClient client, byte[] message)
@@ -389,13 +394,20 @@ public class TCPServer
 
         EventManager.snitchPickupEvent.AddListener(x =>
         {
-            byte[] message = new byte[2];
-            message[0] = (byte)NetworkMessageType.snitchPickup;
-            message[1] = 0;
-            var client = GetClientForTank(x);
+            PlayerId id = new PlayerId();
+            id.Id = x.GetInstanceID();
+            string jsonPackage = JsonUtility.ToJson(id);
 
-            if (client != null)
-                client.Client.Send(message);
+
+            byte[] message= Encoding.ASCII.GetBytes(jsonPackage);
+            var finalMessage = MessageFactory.AddTypeAndLengthToArray(message, (byte)NetworkMessageType.snitchPickup);
+
+            foreach(TcpClient c in connectedClients)
+            {
+                c.Client.Send(finalMessage);
+            }
+
+           
         });
 
         EventManager.destroyedEvent.AddListener(x =>
@@ -409,6 +421,29 @@ public class TCPServer
                 client.Client.Send(message);
         }
      );
+
+        EventManager.hitDetectedEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.hitDetected;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+     );
+        EventManager.successfulHitEvent.AddListener(x =>
+        {
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.successfulHit;
+            message[1] = 0;
+            var client = GetClientForTank(x);
+
+            if (client != null)
+                client.Client.Send(message);
+        }
+   );
 
         EventManager.killEvent.AddListener(x =>
         {
@@ -432,10 +467,39 @@ public class TCPServer
             if (client != null)
                 client.Client.Send(message);
         }
+
+       
    );
 
+        EventManager.snitchAppearedEvent.AddListener(() =>
+        {
+
+            byte[] message = new byte[2];
+            message[0] = (byte)NetworkMessageType.snitchAppeared;
+            message[1] = 0;
+
+            foreach (TcpClient c in connectedClients)
+            {
+                c.Client.Send(message);
+            }
+        });
+
+       
     }
 
+    private void UpdateGameTimeRemaining()
+    {
+        GameTimeUpdate time = new GameTimeUpdate();
+        time.Time = (int)TrainingRoomMain.timeLeft.TotalSeconds;
+        string jsonPackage = JsonUtility.ToJson(time);
+        byte[] message = Encoding.ASCII.GetBytes(jsonPackage);
+        var finalMessage = MessageFactory.AddTypeAndLengthToArray(message, (byte)NetworkMessageType.gameTimeUpdate);
+
+        foreach (TcpClient c in connectedClients)
+        {
+            c.Client.Send(finalMessage);
+        }
+    }
 }
 
 public static class MessageFactory
@@ -475,6 +539,16 @@ public struct CreatePlayer
 
 }
 
+public struct GameTimeUpdate
+{
+    public int Time;
+}
+
+public struct PlayerId
+{
+    public int Id;
+}
+
 
 
 
@@ -504,6 +578,10 @@ public enum NetworkMessageType
     snitchPickup = 21,
     destroyed = 22,
     enteredGoal = 23,
-    kill = 24
+    kill = 24,
+    snitchAppeared = 25,
+    gameTimeUpdate = 26,
+    hitDetected = 27,
+    successfulHit = 28
 
 }

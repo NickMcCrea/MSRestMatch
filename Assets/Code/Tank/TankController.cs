@@ -306,6 +306,8 @@ public class TankController : MonoBehaviour
         if (go.tag.Contains("projectile"))
         {
 
+            EventManager.hitDetectedEvent.Invoke(this);
+            EventManager.successfulHitEvent.Invoke(go.GetComponent<ProjectileState>().OwningTank);
 
             CalculateDamage(go);
             UnityEngine.GameObject.Destroy(go);
