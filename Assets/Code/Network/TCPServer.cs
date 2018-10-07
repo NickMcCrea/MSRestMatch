@@ -10,7 +10,7 @@ using UnityEngine;
 
 public class TCPServer
 {
-
+    public volatile int messageCount;
     private TcpListener tcpListener;
     private Thread networkThread;
     private readonly string ipAddress;
@@ -22,6 +22,8 @@ public class TCPServer
     DateTime ownStateLastUpdate = DateTime.Now;
     DateTime objectStateLastUpdate = DateTime.Now;
     private DateTime lastGameTimeUpdate = DateTime.Now;
+    float timer = 0.0f;
+
     bool usePortInToken = true;
 
     public TCPServer(GameSimulation simulation)
@@ -118,8 +120,8 @@ public class TCPServer
                     {
                         messages.Enqueue(new NetworkMessage() { type = (NetworkMessageType)messageType, data = jsonString, sender = client });
                     }
-
-
+                    messageCount++;
+                    Thread.Sleep(100);
                 }
 
             }
@@ -162,6 +164,13 @@ public class TCPServer
         {
             UpdateGameTimeRemaining();
             lastGameTimeUpdate = DateTime.Now;
+        }
+
+        timer += Time.deltaTime;
+        if(timer > 1)
+        {
+            Debug.Log("Messages per second: " + messageCount);
+            messageCount = 0;
         }
     }
 
@@ -263,7 +272,7 @@ public class TCPServer
     {
         try
         {
-            Debug.Log(newMessage.type + " - " + (string)newMessage.data);
+            //Debug.Log(newMessage.type + " - " + (string)newMessage.data);
 
             //make the id of the tank the IP address of the client
             string clientId = GetTokenFromEndpoint(newMessage.sender);

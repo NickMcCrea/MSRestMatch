@@ -255,8 +255,8 @@ public class GameSimulation
         var randomCirclePoint = UnityEngine.Random.insideUnitCircle;
 
         //random start point
-        Vector3 potentialStartPoint = new Vector3(randomCirclePoint.x, 0, randomCirclePoint.y);
-        potentialStartPoint *= UnityEngine.Random.Range(0, arenaSize - 10);
+        Vector3 potentialStartPoint = new Vector3(randomCirclePoint.x * 70, 0, randomCirclePoint.y * 100);
+       
         return potentialStartPoint;
     }
 
