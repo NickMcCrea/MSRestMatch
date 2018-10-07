@@ -18,8 +18,19 @@ public class GameObjectState
     public int Ammo;
 }
 
+public class TokenCarrier
+{
+    public string Token;
+}
+
 [System.Serializable]
 public class TankEvent<TankController> : UnityEvent<TankController>
+{
+
+}
+
+[System.Serializable]
+public class TankDisconnectEvent<TokenCarrier> : UnityEvent<TokenCarrier>
 {
 
 }
@@ -39,6 +50,7 @@ public static class EventManager
 
     public static UnityEvent snitchAppearedEvent;
 
+    public static TankDisconnectEvent<TokenCarrier> clientDisconnect;
 
     static EventManager()
     {
@@ -61,6 +73,8 @@ public static class EventManager
         hitDetectedEvent = new TankEvent<TankController>();
         successfulHitEvent = new TankEvent<TankController>();
 
+        clientDisconnect = new TankDisconnectEvent<TokenCarrier>();
+
     }
 }
 
@@ -80,7 +94,7 @@ public class GameSimulation
     private List<GameObject> ammoPickups;
     private List<GameObject> healthPickupsToRemove;
     private List<GameObject> ammoPickupsToRemove;
-
+    private List<string> tankDisconnects = new List<string>();
     public GameObject snitch;
 
     public float fov = 50;
@@ -113,6 +127,18 @@ public class GameSimulation
 
         //event setup
         EventManager.Initialise();
+
+
+        EventManager.clientDisconnect.AddListener( x => 
+        {
+            Debug.Log("Client disconnected, removing tank");
+
+            lock (tankDisconnects)
+            {
+                tankDisconnects.Add(x.Token);
+            }
+
+        });
 
     }
 
@@ -316,6 +342,14 @@ public class GameSimulation
             }
         }
 
+        lock (tankDisconnects)
+        {
+            foreach(string s in tankDisconnects)
+            {
+                RemoveTank(FindTankObject(s));
+            }
+            tankDisconnects.Clear();
+        }
 
     }
 

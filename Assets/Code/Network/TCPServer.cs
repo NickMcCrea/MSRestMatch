@@ -17,6 +17,7 @@ public class TCPServer
     private readonly int port;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
+    private Dictionary<TcpClient, string> clientToTokenMap = new Dictionary<TcpClient, string>();
     private Queue<NetworkMessage> messages;
     private GameSimulation sim;
     DateTime ownStateLastUpdate = DateTime.Now;
@@ -42,7 +43,6 @@ public class TCPServer
 
         SetupEvents();
     }
-
 
     private void StartServer()
     {
@@ -93,8 +93,11 @@ public class TCPServer
             lock (connectedClients)
             {
                 connectedClients.Add(client);
+                clientToTokenMap.Add(client, GetTokenFromEndpoint(client));
             }
 
+
+         
 
             // Get a stream object for reading 					
             using (NetworkStream stream = client.GetStream())
@@ -129,6 +132,11 @@ public class TCPServer
         catch (Exception ex)
         {
             //this is terrible. I give no fucks.
+            Debug.Log("Exception when getting stream...disconnecting client");
+            connectedClients.Remove((TcpClient)obj);
+            TokenCarrier t = new TokenCarrier();
+            t.Token = clientToTokenMap[(TcpClient)obj];
+            EventManager.clientDisconnect.Invoke(t);
         }
 
     }
@@ -182,6 +190,7 @@ public class TCPServer
         }
         try
         {
+
             // Get a stream object for writing. 			
             NetworkStream stream = client.GetStream();
             if (stream.CanWrite)
@@ -191,7 +200,27 @@ public class TCPServer
         }
         catch (SocketException socketException)
         {
-            Console.WriteLine("Socket exception: " + socketException);
+            Debug.Log("Socket exception. Closing client " + socketException.Message.ToString());
+            connectedClients.Remove(client);
+            TokenCarrier t = new TokenCarrier();
+            t.Token = clientToTokenMap[client];
+            EventManager.clientDisconnect.Invoke(t);
+        }
+        catch(ObjectDisposedException disposedException)
+        {
+            Debug.Log("Client is disposed. Closing client " + disposedException.Message.ToString());
+            connectedClients.Remove(client);
+            TokenCarrier t = new TokenCarrier();
+            t.Token = clientToTokenMap[client];
+            EventManager.clientDisconnect.Invoke(t);
+        }
+        catch(InvalidOperationException invalidException)
+        {
+            Debug.Log("Invaid operation. Closing client " + invalidException.Message.ToString());
+            connectedClients.Remove(client);
+            TokenCarrier t = new TokenCarrier();
+            t.Token = clientToTokenMap[client];
+            EventManager.clientDisconnect.Invoke(t);
         }
     }
 
@@ -260,12 +289,9 @@ public class TCPServer
         }
     }
 
-    private string GetTokenFromEndpoint(TcpClient client)
+    public static string GetTokenFromEndpoint(TcpClient client)
     {
-        if (usePortInToken)
-            return client.Client.RemoteEndPoint.ToString();
-        else
-            return client.Client.RemoteEndPoint.ToString().Split(':')[0];
+        return client.Client.RemoteEndPoint.ToString();
     }
 
     private void HandleMessage(NetworkMessage newMessage)
@@ -287,7 +313,9 @@ public class TCPServer
                     byte[] testReturn = new byte[2];
                     testReturn[0] = 0;
                     testReturn[1] = 0;
-                    newMessage.sender.Client.Send(testReturn);
+
+                    SendMessage(newMessage.sender, testReturn);
+
                     break;
 
 
@@ -385,7 +413,7 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
                 );
 
@@ -397,7 +425,7 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
        );
 
@@ -413,7 +441,7 @@ public class TCPServer
 
             foreach(TcpClient c in connectedClients)
             {
-                c.Client.Send(finalMessage);
+                SendMessage(c, finalMessage);
             }
 
            
@@ -427,7 +455,7 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
      );
 
@@ -439,7 +467,7 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
      );
         EventManager.successfulHitEvent.AddListener(x =>
@@ -450,7 +478,7 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
    );
 
@@ -462,7 +490,7 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
    );
 
@@ -474,11 +502,18 @@ public class TCPServer
             var client = GetClientForTank(x);
 
             if (client != null)
-                client.Client.Send(message);
+                SendMessage(client, message);
         }
 
        
+
+
+
    );
+
+
+       
+
 
         EventManager.snitchAppearedEvent.AddListener(() =>
         {
@@ -489,7 +524,7 @@ public class TCPServer
 
             foreach (TcpClient c in connectedClients)
             {
-                c.Client.Send(message);
+                SendMessage(c, message);
             }
         });
 
@@ -506,7 +541,8 @@ public class TCPServer
 
         foreach (TcpClient c in connectedClients)
         {
-            c.Client.Send(finalMessage);
+
+            SendMessage(c, finalMessage);
         }
     }
 }
