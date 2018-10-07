@@ -160,7 +160,10 @@ public class TankController : MonoBehaviour
 
                 float diff = TurretHeading - desiredTurretHeading;
                 if (Math.Abs(diff) < 2)
+                {
                     autoTurretTurn = false;
+                    Debug.Log("Turret track complete");
+                }
             }
 
             if (autoMove)
@@ -382,31 +385,37 @@ public class TankController : MonoBehaviour
     {
         toggleForward = true;
         toggleReverse = false;
+        autoMove = false;
     }
     public void ToggleReverse()
     {
         toggleForward = false;
         toggleReverse = true;
+        autoMove = false;
     }
     public void ToggleLeft()
     {
         toggleLeft = true;
         toggleRight = false;
+        autoTurn = false;
     }
     public void ToggleRight()
     {
         toggleLeft = false;
         toggleRight = true;
+        autoTurn = false;
     }
     public void ToggleTurretRight()
     {
         toggleTurretLeft = false;
         toggleTurretRight = true;
+        autoTurretTurn = false;
     }
     public void ToggleTurretLeft()
     {
         toggleTurretLeft = true;
         toggleTurretRight = false;
+        autoTurretTurn = false;
     }
 
     public void StopTurn()
@@ -499,18 +508,24 @@ public class TankController : MonoBehaviour
     {
         desiredTurretHeading = heading;
         autoTurretTurn = true;
+        toggleTurretLeft = false;
+        toggleTurretRight = false;
     }
 
     public void TurnToHeading(float heading)
     {
         desiredHeading = heading;
         autoTurn = true;
+        toggleRight = false;
+        toggleLeft = false;
     }
 
     internal void MoveDistance(float amount)
     {
         autoMove = true;
         desiredDistance = amount;
+        toggleForward = false;
+        toggleReverse = false;
     }
 
     public void Fire()
