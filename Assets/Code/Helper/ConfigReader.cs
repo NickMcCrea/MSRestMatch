@@ -63,12 +63,12 @@ public static class ConfigValueStore
         defaultKvps.Add("kill_points", "1");
         defaultKvps.Add("health_packs_active", "2");
         defaultKvps.Add("ammo_packs_active", "2");
-        defaultKvps.Add("turret_rotation_speed", "2.5");
+        defaultKvps.Add("turret_rotation_speed", "5");
         defaultKvps.Add("movement_speed", "10");
         defaultKvps.Add("turn_speed", "100");
         defaultKvps.Add("fire_interval", "2");
         defaultKvps.Add("projectile_force", "2000");
-        defaultKvps.Add("starting_health", "10");
+        defaultKvps.Add("starting_health", "5");
         defaultKvps.Add("starting_ammo", "10");
 
 

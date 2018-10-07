@@ -97,9 +97,8 @@ public class GameSimulation
     private List<string> tankDisconnects = new List<string>();
     public GameObject snitch;
 
-    public float fov = 50;
+    public float fov = 90;
     public float maxdistance = 100;
-    private float arenaSize = 80f;
     int ammoPickupCount;
     int healthPickupCount;
   

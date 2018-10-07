@@ -147,7 +147,7 @@ public class TankController : MonoBehaviour
                     TurnRight();
 
                 float diff = Heading - desiredHeading;
-                if (Math.Abs(diff) < 2)
+                if (Math.Abs(diff) < 1)
                     autoTurn = false;
             }
 

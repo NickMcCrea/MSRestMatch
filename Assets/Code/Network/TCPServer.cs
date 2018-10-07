@@ -69,13 +69,13 @@ public class TCPServer
     public void Close()
     {
 
-        foreach (TcpClient c in connectedClients)
-        {
-            if (c.Connected)
-                c.Close();
+        //foreach (TcpClient c in connectedClients)
+        //{
+        //    if (c.Connected)
+        //        c.Close();
 
-            c.Dispose();
-        }
+        //    c.Dispose();
+        //}
 
         tcpListener.Stop();
         listening = false;
@@ -124,7 +124,7 @@ public class TCPServer
                         messages.Enqueue(new NetworkMessage() { type = (NetworkMessageType)messageType, data = jsonString, sender = client });
                     }
                     messageCount++;
-                    Thread.Sleep(100);
+                    Thread.Sleep(50);
                 }
 
             }

@@ -61,7 +61,6 @@ public class TrainingRoomMain : MonoBehaviour
     private void OnApplicationQuit()
     {
         server.Close();
-
     }
 
     private static string GenerateRandomHexColorString()
