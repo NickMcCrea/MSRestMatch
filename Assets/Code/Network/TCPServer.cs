@@ -56,7 +56,7 @@ public class TCPServer
             {
                 var client = tcpListener.AcceptTcpClient();
                 ThreadPool.QueueUserWorkItem(NewClientConnection, client);
-                Thread.Sleep(16);
+                Thread.Sleep(32);
             }
             catch (Exception ex)
             {
@@ -68,14 +68,6 @@ public class TCPServer
 
     public void Close()
     {
-
-        //foreach (TcpClient c in connectedClients)
-        //{
-        //    if (c.Connected)
-        //        c.Close();
-
-        //    c.Dispose();
-        //}
 
         tcpListener.Stop();
         listening = false;
@@ -89,7 +81,6 @@ public class TCPServer
         {
 
             var client = (TcpClient)obj;
-            Debug.Log("Client connection made: " + GetTokenFromEndpoint(client));
             lock (connectedClients)
             {
                 connectedClients.Add(client);
@@ -177,7 +168,6 @@ public class TCPServer
         timer += Time.deltaTime;
         if(timer > 1)
         {
-            Debug.Log("Messages per second: " + messageCount);
             messageCount = 0;
         }
     }

@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class GameObjectState
+public struct GameObjectState
 {
     public int Id;
     public string Name;
@@ -40,7 +40,7 @@ public static class EventManager
     public static TankEvent<TankController> healthPickupEvent;
     public static TankEvent<TankController> ammoPickupEvent;
     public static TankEvent<TankController> snitchPickupEvent;
-    
+
 
     public static TankEvent<TankController> destroyedEvent;
     public static TankEvent<TankController> killEvent;
@@ -101,7 +101,7 @@ public class GameSimulation
     public float maxdistance = 100;
     int ammoPickupCount;
     int healthPickupCount;
-  
+
 
 
 
@@ -128,16 +128,16 @@ public class GameSimulation
         EventManager.Initialise();
 
 
-        EventManager.clientDisconnect.AddListener( x => 
-        {
-            Debug.Log("Client disconnected, removing tank");
+        EventManager.clientDisconnect.AddListener(x =>
+       {
+           Debug.Log("Client disconnected, removing tank");
 
-            lock (tankDisconnects)
-            {
-                tankDisconnects.Add(x.Token);
-            }
+           lock (tankDisconnects)
+           {
+               tankDisconnects.Add(x.Token);
+           }
 
-        });
+       });
 
     }
 
@@ -281,7 +281,7 @@ public class GameSimulation
 
         //random start point
         Vector3 potentialStartPoint = new Vector3(randomCirclePoint.x * 70, 0, randomCirclePoint.y * 100);
-       
+
         return potentialStartPoint;
     }
 
@@ -319,7 +319,7 @@ public class GameSimulation
 
         }
 
-        
+
         if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.playing)
         {
 
@@ -343,7 +343,7 @@ public class GameSimulation
 
         lock (tankDisconnects)
         {
-            foreach(string s in tankDisconnects)
+            foreach (string s in tankDisconnects)
             {
                 RemoveTank(FindTankObject(s));
             }
@@ -441,8 +441,8 @@ public class GameSimulation
     private void UpdateTankViewObjects(TankController t)
     {
         var objectsToAdd = new List<GameObjectState>();
-        var tanks = UnityEngine.GameObject.FindObjectsOfType<TankController>();
-        foreach (TankController t2 in tanks)
+
+        foreach (TankController t2 in tankControllers)
         {
 
             //this is us, don't bother returning.
@@ -537,13 +537,11 @@ public class GameSimulation
 
     private void UpdateTankState()
     {
-        var tanks = UnityEngine.GameObject.FindObjectsOfType<TankController>();
-        foreach (TankController t in tanks)
+
+        foreach (TankController t in tankControllers)
         {
             GameObjectState s = CreateTankState(t);
             allObjects.Add(s);
-
-
         }
     }
 
