@@ -374,8 +374,6 @@ public class GameSimulation
                     t.ReplenishHealth();
                     healthPickupsToRemove.Add(pickup);
                     GameObject.Destroy(pickup);
-                    Debug.Log(t.Name + " picks up health");
-
                     EventManager.healthPickupEvent.Invoke(t);
 
 
@@ -393,8 +391,6 @@ public class GameSimulation
                     t.ReplenishAmmo();
                     ammoPickupsToRemove.Add(pickup);
                     GameObject.Destroy(pickup);
-                    Debug.Log(t.Name + " picks up ammo");
-
                     EventManager.ammoPickupEvent.Invoke(t);
                 }
             }
@@ -551,7 +547,6 @@ public class GameSimulation
         EventManager.killEvent.Invoke(killer);
         EventManager.destroyedEvent.Invoke(victim);
 
-        Debug.Log(victim.Name + " killed by " + killer.Name);
         victim.Deaths++;
 
         if (snitch != null)

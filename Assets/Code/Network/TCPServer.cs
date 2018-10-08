@@ -288,8 +288,7 @@ public class TCPServer
     {
         try
         {
-            //Debug.Log(newMessage.type + " - " + (string)newMessage.data);
-
+            
             //make the id of the tank the IP address of the client
             string clientId = GetTokenFromEndpoint(newMessage.sender);
 

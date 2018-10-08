@@ -162,7 +162,7 @@ public class TankController : MonoBehaviour
                 if (Math.Abs(diff) < 2)
                 {
                     autoTurretTurn = false;
-                    Debug.Log("Turret track complete");
+                    
                 }
             }
 
@@ -279,7 +279,7 @@ public class TankController : MonoBehaviour
         ReplenishHealthAndAmmo();
         Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
         transform.rotation = q;
-        Debug.Log(Name + " Respawned ");
+        
 
         var em = smokeParticleSystem.emission;
         em.enabled = false;
@@ -334,7 +334,7 @@ public class TankController : MonoBehaviour
         {
             Sim.RecordFrag(this, go.GetComponent<ProjectileState>().OwningTank);
             DestroyTank();
-            Debug.Log(Name + " Destroyed ");
+            
         }
     }
 
@@ -579,8 +579,8 @@ public class TankController : MonoBehaviour
                 {
                     if (Sim.snitch.GetComponent<SnitchBehaviour>().collector == this)
                     {
-                        //we took the snitch to a goal!
-                        Debug.Log("SNITCH COLLECTED SUCCESSFULLY!");
+                      
+                      
                         Points += snitchGoalPoints;
                         GameObject.Destroy(Sim.snitch);
                     }
