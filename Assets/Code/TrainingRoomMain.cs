@@ -174,7 +174,7 @@ public class TrainingRoomMain : MonoBehaviour
             GamePrep();
         }
 
-        if ((DateTime.Now - scoreRefreshTime).TotalSeconds > 5)
+        if ((DateTime.Now - scoreRefreshTime).TotalSeconds > 5 && currentGameState == GameState.playing)
         {
             RefreshScores();
         }
