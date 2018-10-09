@@ -124,10 +124,7 @@ public class TCPServer
         {
             //this is terrible. I give no fucks.
             Debug.Log("Exception when getting stream...disconnecting client");
-            connectedClients.Remove((TcpClient)obj);
-            TokenCarrier t = new TokenCarrier();
-            t.Token = clientToTokenMap[(TcpClient)obj];
-            EventManager.clientDisconnect.Invoke(t);
+            RemoveClient((TcpClient)obj);
         }
 
     }
@@ -191,27 +188,26 @@ public class TCPServer
         catch (SocketException socketException)
         {
             Debug.Log("Socket exception. Closing client " + socketException.Message.ToString());
-            connectedClients.Remove(client);
-            TokenCarrier t = new TokenCarrier();
-            t.Token = clientToTokenMap[client];
-            EventManager.clientDisconnect.Invoke(t);
+            RemoveClient(client);
         }
-        catch(ObjectDisposedException disposedException)
+        catch (ObjectDisposedException disposedException)
         {
             Debug.Log("Client is disposed. Closing client " + disposedException.Message.ToString());
-            connectedClients.Remove(client);
-            TokenCarrier t = new TokenCarrier();
-            t.Token = clientToTokenMap[client];
-            EventManager.clientDisconnect.Invoke(t);
+            RemoveClient(client);
         }
         catch(InvalidOperationException invalidException)
         {
             Debug.Log("Invaid operation. Closing client " + invalidException.Message.ToString());
-            connectedClients.Remove(client);
-            TokenCarrier t = new TokenCarrier();
-            t.Token = clientToTokenMap[client];
-            EventManager.clientDisconnect.Invoke(t);
+            RemoveClient(client);
         }
+    }
+
+    private void RemoveClient(TcpClient client)
+    {
+        connectedClients.Remove(client);
+        TokenCarrier t = new TokenCarrier();
+        t.Token = clientToTokenMap[client];
+        EventManager.clientDisconnect.Invoke(t);
     }
 
     private TcpClient GetClientForTank(TankController tank)
