@@ -17,7 +17,6 @@ public class TCPServer
     private readonly int port;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
-    private List<TcpClient> clientsToRemove;
     private Dictionary<TcpClient, string> clientToTokenMap = new Dictionary<TcpClient, string>();
     private Queue<NetworkMessage> messages;
     private GameSimulation sim;
@@ -34,7 +33,7 @@ public class TCPServer
         ipAddress = ConfigValueStore.GetValue("ipaddress");
         port = Int32.Parse(ConfigValueStore.GetValue("port"));
 
-        clientsToRemove = new List<TcpClient>();
+    
         sim = simulation;
         messages = new Queue<NetworkMessage>();
         networkThread = new Thread(new ThreadStart(StartServer));
@@ -139,8 +138,6 @@ public class TCPServer
         }
 
 
-
-
         if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
         {
             foreach (TcpClient c in connectedClients)
@@ -170,16 +167,6 @@ public class TCPServer
         {
             messageCount = 0;
         }
-
-        lock (clientsToRemove)
-        {
-            foreach (TcpClient c in clientsToRemove)
-            {
-                connectedClients.Remove(c);
-            }
-            clientsToRemove.Clear();
-        }
-
     }
 
     private void SendMessage(TcpClient client, byte[] message)
@@ -217,11 +204,7 @@ public class TCPServer
 
     private void RemoveClient(TcpClient client)
     {
-        
-        lock (clientsToRemove)
-        {
-            clientsToRemove.Add(client);
-        }
+        connectedClients.Remove(client);
         TokenCarrier t = new TokenCarrier();
         t.Token = clientToTokenMap[client];
         EventManager.clientDisconnect.Invoke(t);
