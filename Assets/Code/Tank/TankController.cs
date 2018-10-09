@@ -69,6 +69,8 @@ public class TankController : MonoBehaviour
     private float desiredTurretHeading = 0;
     private float desiredDistance = 0;
     private Vector3 oldPosition;
+    GameObject explosivo1;
+    GameObject explosivo2;
 
     // Use this for initialization
     public virtual void Start()
@@ -84,7 +86,7 @@ public class TankController : MonoBehaviour
 
         uiLabel.GetComponent<TextMeshPro>().text = Name;
 
-      
+
         smokeParticleSystem = root.transform.Find("main").gameObject.GetComponent<ParticleSystem>();
         var em = smokeParticleSystem.emission;
 
@@ -112,6 +114,10 @@ public class TankController : MonoBehaviour
         snitchKillPoints = ConfigValueStore.GetIntValue("snitch_kill_points");
         killPoints = ConfigValueStore.GetIntValue("kill_points");
 
+        explosivo1 = Instantiate(Resources.Load("Prefabs/Explosion")) as UnityEngine.GameObject;
+        explosivo1.SetActive(false);
+        explosivo2 = Instantiate(Resources.Load("Prefabs/TankExplosion")) as UnityEngine.GameObject;
+        explosivo2.SetActive(false);
 
         Health = startingHealth;
         Ammo = startingAmmo;
@@ -162,7 +168,7 @@ public class TankController : MonoBehaviour
                 if (Math.Abs(diff) < 2)
                 {
                     autoTurretTurn = false;
-                    
+
                 }
             }
 
@@ -279,10 +285,24 @@ public class TankController : MonoBehaviour
         ReplenishHealthAndAmmo();
         Quaternion q = Quaternion.FromToRotation(transform.up, Vector3.up) * transform.rotation;
         transform.rotation = q;
-        
+
+        ResetParticlesOnObject(explosivo1);
+        ResetParticlesOnObject(explosivo2);
+        explosivo1.SetActive(false);
+        explosivo2.SetActive(false);
+
 
         var em = smokeParticleSystem.emission;
         em.enabled = false;
+    }
+
+    private void ResetParticlesOnObject(GameObject obj)
+    {
+        var particleSystems = obj.GetComponentsInChildren<ParticleSystem>();
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            particleSystems[i].Clear();
+        }
     }
 
     public void ReplenishHealthAndAmmo()
@@ -334,7 +354,7 @@ public class TankController : MonoBehaviour
         {
             Sim.RecordFrag(this, go.GetComponent<ProjectileState>().OwningTank);
             DestroyTank();
-            
+
         }
     }
 
@@ -349,11 +369,14 @@ public class TankController : MonoBehaviour
 
         ClearUnbankedPoints();
 
-        var explosivo1 = Instantiate(Resources.Load("Prefabs/Explosion")) as UnityEngine.GameObject;
-        explosivo1.transform.position = transform.position;
 
-        var explosivo2 = Instantiate(Resources.Load("Prefabs/TankExplosion")) as UnityEngine.GameObject;
+        
+        explosivo1.transform.position = transform.position;
         explosivo2.transform.position = transform.position;
+        explosivo1.SetActive(true);
+        explosivo2.SetActive(true);
+
+
 
         var em = smokeParticleSystem.emission;
         em.enabled = true;
@@ -364,10 +387,10 @@ public class TankController : MonoBehaviour
     }
 
     public void AddKillPoints()
-    {  
+    {
         if (ConfigValueStore.GetBoolValue("kill_capture_mode"))
         {
-            for(int i = 0; i < killPoints; i++)
+            for (int i = 0; i < killPoints; i++)
             {
                 UnbankedPoints++;
                 var ob = GameObject.Instantiate(Resources.Load("Prefabs/UnbankedPoint") as GameObject);
@@ -579,8 +602,8 @@ public class TankController : MonoBehaviour
                 {
                     if (Sim.snitch.GetComponent<SnitchBehaviour>().collector == this)
                     {
-                      
-                      
+
+
                         Points += snitchGoalPoints;
                         GameObject.Destroy(Sim.snitch);
                     }
