@@ -295,7 +295,7 @@ public class TankController : MonoBehaviour
         var em = smokeParticleSystem.emission;
         em.enabled = false;
     }
-
+    
     private void ResetParticlesOnObject(GameObject obj)
     {
         var particleSystems = obj.GetComponentsInChildren<ParticleSystem>();
@@ -323,7 +323,6 @@ public class TankController : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        Console.WriteLine("Tank collision detected: " + collision.gameObject.name);
 
         var go = collision.collider.gameObject;
         if (go.tag.Contains("projectile"))
@@ -472,13 +471,7 @@ public class TankController : MonoBehaviour
     }
     public void Forward()
     {
-        if (root == null)
-        {
-            Console.WriteLine("Root ref null");
-            return;
-        }
-        else
-            Console.WriteLine("Root ref fixed");
+       
 
         if (transform.position.y > -1.75f)
             return;
