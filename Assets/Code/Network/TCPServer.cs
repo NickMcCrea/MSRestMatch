@@ -417,7 +417,7 @@ public class TCPServer
         EventManager.snitchPickupEvent.AddListener(x =>
         {
             PlayerId id = new PlayerId();
-            id.Id = x.GetInstanceID();
+            id.Id = x.gameObject.GetInstanceID();
             string jsonPackage = JsonUtility.ToJson(id);
 
 
