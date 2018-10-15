@@ -17,6 +17,9 @@ public class TCPServer
     private readonly int port;
     public volatile bool listening = true;
     private List<TcpClient> connectedClients;
+    private List<TcpClient> justAddedClients = new List<TcpClient>();
+    private List<TcpClient> justRemovedClients = new List<TcpClient>();
+
     private Dictionary<TcpClient, string> clientToTokenMap = new Dictionary<TcpClient, string>();
     private Queue<NetworkMessage> messages;
     private GameSimulation sim;
@@ -81,14 +84,17 @@ public class TCPServer
         {
 
             var client = (TcpClient)obj;
-            lock (connectedClients)
+            lock (justAddedClients)
             {
-                connectedClients.Add(client);
+                justAddedClients.Add(client);
+
+            }
+            lock (clientToTokenMap)
+            {
                 clientToTokenMap.Add(client, GetTokenFromEndpoint(client));
             }
 
 
-         
 
             // Get a stream object for reading 					
             using (NetworkStream stream = client.GetStream())
@@ -123,7 +129,7 @@ public class TCPServer
         catch (Exception ex)
         {
             //this is terrible. I give no fucks.
-            Debug.Log("Exception when getting stream...disconnecting client");
+            Debug.Log("Exception on listening thread...disconnecting client");
             RemoveClient((TcpClient)obj);
         }
 
@@ -137,6 +143,29 @@ public class TCPServer
             HandleMessage(newMessage);
         }
 
+        if (justAddedClients.Count > 0)
+        {
+            lock (justAddedClients)
+            {
+                foreach (TcpClient tcpClient in justAddedClients)
+                {
+                    connectedClients.Add(tcpClient);
+                }
+                justAddedClients.Clear();
+            }
+        }
+
+        if (justRemovedClients.Count > 0)
+        {
+            lock (justRemovedClients)
+            {
+                foreach (TcpClient tcpClient in justRemovedClients)
+                {
+                    connectedClients.Remove(tcpClient);
+                }
+                justRemovedClients.Clear();
+            }
+        }
 
         if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
         {
@@ -204,9 +233,16 @@ public class TCPServer
 
     private void RemoveClient(TcpClient client)
     {
-        connectedClients.Remove(client);
+        lock (justRemovedClients)
+        {
+            justRemovedClients.Add(client);
+        }
+
         TokenCarrier t = new TokenCarrier();
-        t.Token = clientToTokenMap[client];
+        lock (clientToTokenMap)
+        {
+            t.Token = clientToTokenMap[client];
+        }
         EventManager.clientDisconnect.Invoke(t);
     }
 

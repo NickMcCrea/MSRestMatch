@@ -692,6 +692,11 @@ public class GameSimulation
 
     private void RemoveTank(TankController t)
     {
+        if (t == null)
+        {
+            Debug.Log("Attempting to remove null tank");
+            return;
+        }
         tankControllers.Remove(t);
         objectsInFieldOfView.Remove(t.Token);
         GameObject.Destroy(t.gameObject);
