@@ -176,6 +176,9 @@ public class TCPServer
         foreach(TankController t in sim.tankControllers)
         {
             TcpClient client = GetClientForTank(t);
+            if (client == null)
+                continue;
+
             if ((DateTime.Now - t.lastOwnUpdateTime).TotalMilliseconds > 350)
             {
                 t.lastOwnUpdateTime = DateTime.Now;
