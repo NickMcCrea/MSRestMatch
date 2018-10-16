@@ -11,6 +11,8 @@ using UnityEngine;
 public class TCPServer
 {
     public volatile int messageCount;
+    public volatile int messageOutCount;
+
     private TcpListener tcpListener;
     private Thread networkThread;
     private readonly string ipAddress;
@@ -36,7 +38,7 @@ public class TCPServer
         ipAddress = ConfigValueStore.GetValue("ipaddress");
         port = Int32.Parse(ConfigValueStore.GetValue("port"));
 
-    
+
         sim = simulation;
         messages = new Queue<NetworkMessage>();
         networkThread = new Thread(new ThreadStart(StartServer));
@@ -137,11 +139,15 @@ public class TCPServer
 
     public void Update()
     {
-        if (messages.Count > 0)
+        lock (messages)
         {
-            var newMessage = messages.Dequeue();
-            HandleMessage(newMessage);
+            while (messages.Count > 0)
+            {
+                var newMessage = messages.Dequeue();
+                HandleMessage(newMessage);
+            }
         }
+
 
         if (justAddedClients.Count > 0)
         {
@@ -167,23 +173,45 @@ public class TCPServer
             }
         }
 
-        if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
+        foreach(TankController t in sim.tankControllers)
         {
-            foreach (TcpClient c in connectedClients)
+            TcpClient client = GetClientForTank(t);
+            if ((DateTime.Now - t.lastOwnUpdateTime).TotalMilliseconds > 350)
             {
-                UpdateClientWithOwnState(c);
+                t.lastOwnUpdateTime = DateTime.Now;
+                UpdateClientWithOwnState(client);
+                continue;
             }
-            ownStateLastUpdate = DateTime.Now;
+
+            if ((DateTime.Now - t.lastOtherUpdateTime).TotalMilliseconds > 500)
+            {
+                t.lastOtherUpdateTime = DateTime.Now;
+                UpdateClientWithOtherObjectState(client);
+                continue;
+            }
         }
 
-        if ((DateTime.Now - objectStateLastUpdate).TotalMilliseconds > 500)
-        {
-            foreach (TcpClient c in connectedClients)
-            {
-                UpdateClientWithOtherObjectState(c);
-            }
-            objectStateLastUpdate = DateTime.Now;
-        }
+        
+
+
+
+        //if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
+        //{
+        //    foreach (TcpClient c in connectedClients)
+        //    {
+        //        UpdateClientWithOwnState(c);
+        //    }
+        //    ownStateLastUpdate = DateTime.Now;
+        //}
+
+        //if ((DateTime.Now - objectStateLastUpdate).TotalMilliseconds > 500)
+        //{
+        //    foreach (TcpClient c in connectedClients)
+        //    {
+        //        UpdateClientWithOtherObjectState(c);
+        //    }
+        //    objectStateLastUpdate = DateTime.Now;
+        //}
 
         if ((DateTime.Now - lastGameTimeUpdate).TotalSeconds > 30)
         {
@@ -192,9 +220,12 @@ public class TCPServer
         }
 
         timer += Time.deltaTime;
-        if(timer > 1)
+        if (timer > 1)
         {
+          //  Debug.Log("Message in count per second: " + messageCount);
+          //  Debug.Log("Message out count per second: " + messageOutCount);
             messageCount = 0;
+            messageOutCount = 0;
         }
     }
 
@@ -212,6 +243,7 @@ public class TCPServer
             if (stream.CanWrite)
             {
                 stream.Write(message, 0, message.Length);
+                messageOutCount++;
             }
         }
         catch (SocketException socketException)
@@ -224,7 +256,7 @@ public class TCPServer
             Debug.Log("Client is disposed. Closing client " + disposedException.Message.ToString());
             RemoveClient(client);
         }
-        catch(InvalidOperationException invalidException)
+        catch (InvalidOperationException invalidException)
         {
             Debug.Log("Invaid operation. Closing client " + invalidException.Message.ToString());
             RemoveClient(client);
@@ -320,7 +352,7 @@ public class TCPServer
     {
         try
         {
-            
+
             //make the id of the tank the IP address of the client
             string clientId = GetTokenFromEndpoint(newMessage.sender);
 
@@ -457,15 +489,15 @@ public class TCPServer
             string jsonPackage = JsonUtility.ToJson(id);
 
 
-            byte[] message= Encoding.ASCII.GetBytes(jsonPackage);
+            byte[] message = Encoding.ASCII.GetBytes(jsonPackage);
             var finalMessage = MessageFactory.AddTypeAndLengthToArray(message, (byte)NetworkMessageType.snitchPickup);
 
-            foreach(TcpClient c in connectedClients)
+            foreach (TcpClient c in connectedClients)
             {
                 SendMessage(c, finalMessage);
             }
 
-           
+
         });
 
         EventManager.destroyedEvent.AddListener(x =>
@@ -526,14 +558,14 @@ public class TCPServer
                 SendMessage(client, message);
         }
 
-       
+
 
 
 
    );
 
 
-       
+
 
 
         EventManager.snitchAppearedEvent.AddListener(() =>
@@ -549,7 +581,7 @@ public class TCPServer
             }
         });
 
-       
+
     }
 
     private void UpdateGameTimeRemaining()

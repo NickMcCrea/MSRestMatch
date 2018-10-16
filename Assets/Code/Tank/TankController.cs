@@ -71,6 +71,8 @@ public class TankController : MonoBehaviour
     private Vector3 oldPosition;
     GameObject explosivo1;
     GameObject explosivo2;
+    public DateTime lastOwnUpdateTime = DateTime.Now;
+    public DateTime lastOtherUpdateTime = DateTime.Now;
 
     // Use this for initialization
     public virtual void Start()
