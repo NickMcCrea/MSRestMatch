@@ -58,8 +58,8 @@ public static class ConfigValueStore
         defaultKvps.Add("kill_capture_mode", "true");
         defaultKvps.Add("snitch_enabled", "true");
         defaultKvps.Add("snitch_spawn_threshold", "90");
-        defaultKvps.Add("snitch_goal_points", "20");
-        defaultKvps.Add("snitch_kill_points", "5");
+        defaultKvps.Add("snitch_goal_points", "5");
+        defaultKvps.Add("snitch_kill_points", "2");
         defaultKvps.Add("kill_points", "1");
         defaultKvps.Add("health_packs_active", "2");
         defaultKvps.Add("ammo_packs_active", "2");
@@ -68,7 +68,7 @@ public static class ConfigValueStore
         defaultKvps.Add("turn_speed", "100");
         defaultKvps.Add("fire_interval", "2");
         defaultKvps.Add("projectile_force", "2000");
-        defaultKvps.Add("starting_health", "5");
+        defaultKvps.Add("starting_health", "3");
         defaultKvps.Add("starting_ammo", "10");
 
 
