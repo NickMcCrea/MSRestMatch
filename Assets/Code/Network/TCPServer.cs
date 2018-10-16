@@ -123,7 +123,7 @@ public class TCPServer
                         messages.Enqueue(new NetworkMessage() { type = (NetworkMessageType)messageType, data = jsonString, sender = client });
                     }
                     messageCount++;
-                    Thread.Sleep(50);
+                    Thread.Sleep(16);
                 }
 
             }
@@ -191,10 +191,6 @@ public class TCPServer
             }
         }
 
-        
-
-
-
         //if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
         //{
         //    foreach (TcpClient c in connectedClients)
@@ -223,7 +219,7 @@ public class TCPServer
         if (timer > 1)
         {
           //  Debug.Log("Message in count per second: " + messageCount);
-          //  Debug.Log("Message out count per second: " + messageOutCount);
+            //Debug.Log("Message out count per second: " + messageOutCount);
             messageCount = 0;
             messageOutCount = 0;
         }
@@ -243,6 +239,7 @@ public class TCPServer
             if (stream.CanWrite)
             {
                 stream.Write(message, 0, message.Length);
+                stream.Flush();
                 messageOutCount++;
             }
         }
