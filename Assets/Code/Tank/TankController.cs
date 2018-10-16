@@ -567,7 +567,7 @@ public class TankController : MonoBehaviour
         projectile.GetComponent<TrailRenderer>().startColor = Color.red;
         projectile.GetComponent<TrailRenderer>().endColor = Color.red;
 
-        GameObject.Destroy(projectile, 3);
+        GameObject.Destroy(projectile, 4);
 
         Ammo--;
 
