@@ -296,7 +296,7 @@ public class GameSimulation
             RemoveTank(t);
         tanksToBeRemoved.Clear();
 
-        if (enqueuedCommands.Count > 0)
+        while (enqueuedCommands.Count > 0)
         {
             GameCommand command = enqueuedCommands.Dequeue();
             HandleCommand(command);

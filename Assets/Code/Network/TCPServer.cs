@@ -139,6 +139,8 @@ public class TCPServer
 
     public void Update()
     {
+        //Debug.Log("Incoming Message Queue Size: " + messages.Count);
+
         lock (messages)
         {
             while (messages.Count > 0)
@@ -148,7 +150,7 @@ public class TCPServer
             }
         }
 
-
+        
         if (justAddedClients.Count > 0)
         {
             lock (justAddedClients)
@@ -173,7 +175,7 @@ public class TCPServer
             }
         }
 
-        foreach(TankController t in sim.tankControllers)
+        foreach (TankController t in sim.tankControllers)
         {
 
             if ((DateTime.Now - t.lastOwnUpdateTime).TotalMilliseconds > 350)
@@ -226,7 +228,7 @@ public class TCPServer
         timer += Time.deltaTime;
         if (timer > 1)
         {
-          //  Debug.Log("Message in count per second: " + messageCount);
+            //Debug.Log("Message in count per second: " + messageCount);
             //Debug.Log("Message out count per second: " + messageOutCount);
             messageCount = 0;
             messageOutCount = 0;
@@ -350,7 +352,15 @@ public class TCPServer
 
     public static string GetTokenFromEndpoint(TcpClient client)
     {
-        return client.Client.RemoteEndPoint.ToString();
+        try
+        {
+            return client.Client.RemoteEndPoint.ToString();
+        }
+        catch(Exception ex)
+        {
+            Debug.Log("Client cannot be found");
+            return "";
+        }
     }
 
     private void HandleMessage(NetworkMessage newMessage)
