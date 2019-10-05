@@ -56,6 +56,7 @@ public static class ConfigValueStore
         defaultKvps.Add("port", "8052");
         defaultKvps.Add("game_time", "300");
         defaultKvps.Add("kill_capture_mode", "true");
+        defaultKvps.Add("team_mode", "true");
         defaultKvps.Add("snitch_enabled", "true");
         defaultKvps.Add("snitch_spawn_threshold", "90");
         defaultKvps.Add("snitch_goal_points", "5");
@@ -70,6 +71,8 @@ public static class ConfigValueStore
         defaultKvps.Add("projectile_force", "2000");
         defaultKvps.Add("starting_health", "3");
         defaultKvps.Add("starting_ammo", "10");
+        defaultKvps.Add("respawn_time", "5");
+
 
 
     }

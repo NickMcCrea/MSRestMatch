@@ -80,7 +80,8 @@ public static class EventManager
 
 public class GameSimulation
 {
-    GameSimRules rules;
+
+    public Dictionary<string, List<TankController>> teams;
     List<Player> activePlayers;
     TankFactory tankFactory;
     public Queue<GameCommand> enqueuedCommands;
@@ -96,6 +97,8 @@ public class GameSimulation
     private List<GameObject> ammoPickupsToRemove;
     private List<string> tankDisconnects = new List<string>();
     public GameObject snitch;
+    private Dictionary<string, int> teamNameToModelMap;
+    private int currentModel = 1;
 
     public float fov = 90;
     public float maxdistance = 100;
@@ -105,10 +108,11 @@ public class GameSimulation
 
 
 
-    public GameSimulation(GameSimRules ruleset)
+    public GameSimulation()
     {
         activePlayers = new List<Player>();
-        rules = ruleset;
+        teamNameToModelMap = new Dictionary<string, int>();
+        teams = new Dictionary<string, List<TankController>>();
         tankFactory = new TankFactory();
         enqueuedCommands = new Queue<GameCommand>();
         tankControllers = new List<TankController>();
@@ -147,7 +151,6 @@ public class GameSimulation
         Vector3 potentialStartPoint = RandomArenaPosition();
 
 
-        //TODO - check starting point for obstacles. Don't start too close to other tanks
 
         //already exists. Ignore.
         if (FindTankObject(create.Token) != null)
@@ -156,10 +159,42 @@ public class GameSimulation
         }
 
 
-        var t = tankFactory.CreateTank(create.Color, create.Name, create.Token, potentialStartPoint);
+        GameObject t = null;
+
+        //team game. 
+        if (ConfigValueStore.GetBoolValue("team_mode"))
+        {
+
+            if (create.Name.Contains(":"))
+            {
+                //get the team name.
+                string teamName = create.Name.Split(':')[0].ToUpper().Trim();
+
+                //add the team to the list of teams if it isn't in there already.
+                //Assign the team a tank type if this is the first time we've seen the team.
+                if (!teams.Keys.Contains(teamName))
+                {
+                    teams.Add(teamName, new List<TankController>());
+                    teamNameToModelMap.Add(teamName, currentModel);
+                    currentModel++;
+                }
+
+
+                t = tankFactory.CreateTank(create.Color, create.Name, create.Token, potentialStartPoint, teamNameToModelMap[teamName]);
+                teams[teamName].Add(t.GetComponent<TankController>());
+            }
+
+        }
+        else
+        {
+            t = tankFactory.CreateTank(create.Color, create.Name, create.Token, potentialStartPoint, -1);
+        }
+
+
+
         //randomly rotate the tank
         t.GetComponent<TankController>().transform.Rotate(Vector3.up, UnityEngine.Random.Range(0, 360));
-        t.GetComponent<TankController>().Ruleset = rules;
+
         t.GetComponent<TankController>().Sim = this;
         tankControllers.Add(t.GetComponent<TankController>());
         return t;
@@ -189,7 +224,7 @@ public class GameSimulation
     {
         var t = tankFactory.CreateManualTank("ManualTank", RandomArenaPosition());
 
-        t.GetComponent<ManualTankController>().Ruleset = rules;
+
         t.GetComponent<ManualTankController>().Sim = this;
         t.GetComponent<ManualTankController>().infiniteAmmo = false;
         t.GetComponent<ManualTankController>().infiniteHealth = false;
@@ -200,11 +235,10 @@ public class GameSimulation
     internal GameObject CreatePlayerTest(PlayerCreateTest create)
     {
 
-        var t = tankFactory.CreateTank(create.Color, create.Name, create.Token, new Vector3(float.Parse(create.X), 5, float.Parse(create.Y)));
+        var t = tankFactory.CreateTank(create.Color, create.Name, create.Token, new Vector3(float.Parse(create.X), 5, float.Parse(create.Y)), -1);
 
         t.GetComponent<TankController>().transform.Rotate(Vector3.up, float.Parse(create.Angle));
 
-        t.GetComponent<TankController>().Ruleset = rules;
         t.GetComponent<TankController>().Sim = this;
         tankControllers.Add(t.GetComponent<TankController>());
         return t;
@@ -245,7 +279,6 @@ public class GameSimulation
     {
         var t = tankFactory.CreateAITank(color, name, startingPos);
 
-        t.GetComponent<AITankController>().Ruleset = rules;
         t.GetComponent<AITankController>().Sim = this;
         t.GetComponent<AITankController>().infiniteAmmo = infiniteAmmo;
         t.GetComponent<AITankController>().infiniteHealth = infiniteHealth;
@@ -267,7 +300,6 @@ public class GameSimulation
     {
         var t = tankFactory.CreateDummyTank(color, name, startingPos);
 
-        t.GetComponent<DummyTank>().Ruleset = rules;
         t.GetComponent<DummyTank>().Sim = this;
         t.GetComponent<DummyTank>().infiniteAmmo = infiniteAmmo;
         t.GetComponent<DummyTank>().infiniteHealth = infiniteHealth;
@@ -732,18 +764,5 @@ public class GameSimulation
 
 }
 
-public class GameSimRules
-{
-    public int FragWinLimit { get; set; }
-    public int RespawnTime { get; set; }
-    public int GameTimeLimit { get; set; }
-    public bool TrainingMode { get; set; }
 
-    public GameSimRules()
-    {
-        FragWinLimit = 10;
-        RespawnTime = 5;
-        GameTimeLimit = 300;
-        TrainingMode = false;
-    }
-}
+

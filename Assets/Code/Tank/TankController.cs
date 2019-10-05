@@ -54,7 +54,6 @@ public class TankController : MonoBehaviour
     private bool toggleTurretRight;
     private bool toggleTurretLeft;
     private ParticleSystem smokeParticleSystem;
-    public GameSimRules Ruleset { get; internal set; }
     public GameSimulation Sim { get; internal set; }
     public int Deaths { get; internal set; }
     GameObject uiLabel;
@@ -221,7 +220,7 @@ public class TankController : MonoBehaviour
         else if (currentState == TankState.destroyed)
         {
             TimeSpan sinceDestruction = DateTime.Now - destroyTime;
-            if (sinceDestruction.TotalSeconds > Ruleset.RespawnTime)
+            if (sinceDestruction.TotalSeconds > ConfigValueStore.GetIntValue("respawn_time"))
             {
                 Sim.RespawnTank(this);
             }

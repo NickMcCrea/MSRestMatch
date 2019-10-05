@@ -131,7 +131,7 @@ public class TCPServer
         catch (Exception ex)
         {
             //this is terrible. I give no fucks.
-            Debug.Log("Exception on listening thread...disconnecting client");
+            Debug.Log("Exception on listening thread...disconnecting client" + ex.ToString());
             RemoveClient((TcpClient)obj);
         }
 
@@ -201,23 +201,7 @@ public class TCPServer
             }
         }
 
-        //if ((DateTime.Now - ownStateLastUpdate).TotalMilliseconds > 350)
-        //{
-        //    foreach (TcpClient c in connectedClients)
-        //    {
-        //        UpdateClientWithOwnState(c);
-        //    }
-        //    ownStateLastUpdate = DateTime.Now;
-        //}
-
-        //if ((DateTime.Now - objectStateLastUpdate).TotalMilliseconds > 500)
-        //{
-        //    foreach (TcpClient c in connectedClients)
-        //    {
-        //        UpdateClientWithOtherObjectState(c);
-        //    }
-        //    objectStateLastUpdate = DateTime.Now;
-        //}
+    
 
         if ((DateTime.Now - lastGameTimeUpdate).TotalSeconds > 30)
         {

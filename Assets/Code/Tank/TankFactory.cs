@@ -14,12 +14,14 @@ public class TankFactory : MonoBehaviour
 
     }
 
-    public GameObject CreateTank(string mainColor, string name, string token, Vector3 startingPosition)
+    public GameObject CreateTank(string mainColor, string name, string token, Vector3 startingPosition, int tankType)
     {
 
-
-
-        var tank = CreateTank<TankController>(mainColor);
+        GameObject tank;
+        if (tankType == -1)
+            tank = CreateTank<TankController>(mainColor);
+        else
+            tank = CreateTank<TankController>(mainColor, tankType);
 
         // PlaceTankAtSpawnPoint(tank, "SpawnPoint " + spawnPoint.ToString());
 
@@ -100,13 +102,26 @@ public class TankFactory : MonoBehaviour
 
         GameObject tank;
         int randomTank = new System.Random().Next(1, 11);
+
+
         tank = Instantiate(Resources.Load("Prefabs/Tanks/Tank" + randomTank)) as UnityEngine.GameObject;
         tank.AddComponent(typeof(T));
 
         return tank;
     }
+    private GameObject CreateTank<T>(string tankColor, int tankType)
+    {
 
-    private void SetTankColor(UnityEngine.GameObject tankRootObject, string hexColorString)
+        GameObject tank;
+
+
+
+        tank = Instantiate(Resources.Load("Prefabs/Tanks/Tank" + tankType)) as UnityEngine.GameObject;
+        tank.AddComponent(typeof(T));
+
+        return tank;
+    }
+    public void SetTankColor(UnityEngine.GameObject tankRootObject, string hexColorString)
     {
         Color color;
         ColorUtility.TryParseHtmlString(hexColorString, out color);
@@ -122,19 +137,22 @@ public class TankFactory : MonoBehaviour
         foreach (MeshRenderer mr in renderers)
         {
             foreach (Material m in mr.materials)
-                m.color = color;
+                m.color = color * 2f;
         }
     }
 
 
-    private void SetTankEmissive(UnityEngine.GameObject tankRootObject, Color color, float level)
+    public void SetTankEmissive(UnityEngine.GameObject tankRootObject, Color color)
     {
         var renderers = tankRootObject.GetComponentsInChildren<MeshRenderer>();
 
         foreach (MeshRenderer mr in renderers)
         {
             foreach (Material m in mr.materials)
-                m.SetColor("_EmissionColor", color);
+            {
+                m.SetColor("_EmissionColor", color * 5f);
+
+            }
         }
     }
 }

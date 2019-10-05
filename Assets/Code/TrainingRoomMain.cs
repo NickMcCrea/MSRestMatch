@@ -38,9 +38,8 @@ public class TrainingRoomMain : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        var ruleSet = new GameSimRules();
-        ruleSet.TrainingMode = true;
-        simulation = new GameSimulation(ruleSet);
+       
+        simulation = new GameSimulation();
 
 
         server = new TCPServer(simulation);
