@@ -214,10 +214,29 @@ public class TrainingRoomMain : MonoBehaviour
 
         sb.AppendLine();
         sb.AppendLine();
-        foreach (TankController t in scores)
+
+        if (!ConfigValueStore.GetBoolValue("team_mode"))
         {
-            sb.Append(t.Name + " - " + t.Points);
-            sb.AppendLine();
+
+            foreach (TankController t in scores)
+            {
+                sb.Append(t.Name + " - " + t.Points);
+                sb.AppendLine();
+            }
+        }
+        else
+        {
+            foreach(string team in simulation.teams.Keys)
+            {
+                int teamTotal = 0;
+                foreach(TankController t in scores)
+                {
+                    if (GameSimulation.GetTeamName(t.Name) == team)
+                        teamTotal += t.Points;
+                }
+                sb.Append(team + " - " + teamTotal);
+                sb.AppendLine();
+            }
         }
 
         scoreBoard.text = sb.ToString();

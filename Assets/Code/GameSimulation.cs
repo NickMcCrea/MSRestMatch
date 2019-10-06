@@ -145,6 +145,22 @@ public class GameSimulation
 
     }
 
+    public static bool OnSameTeam(string name, string otherName)
+    {
+        if (name.Contains(":") && otherName.Contains(":"))
+        {
+            string myTeamName = GetTeamName(name);
+            string otherTeamName = GetTeamName(otherName);
+            return myTeamName == otherTeamName;
+        }
+        return false;
+    }
+
+    public static string GetTeamName(string name)
+    {
+        return name.Split(':')[0].ToUpper().Trim();
+    }
+
     internal GameObject CreatePlayer(PlayerCreate create)
     {
         //get a random point in the arena
@@ -168,7 +184,7 @@ public class GameSimulation
             if (create.Name.Contains(":"))
             {
                 //get the team name.
-                string teamName = create.Name.Split(':')[0].ToUpper().Trim();
+                string teamName = GetTeamName(create.Name);
 
                 //add the team to the list of teams if it isn't in there already.
                 //Assign the team a tank type if this is the first time we've seen the team.
@@ -176,12 +192,16 @@ public class GameSimulation
                 {
                     teams.Add(teamName, new List<TankController>());
                     teamNameToModelMap.Add(teamName, currentModel);
-                    currentModel++;
+                    currentModel+=2;
                 }
 
 
                 t = tankFactory.CreateTank(create.Color, create.Name, create.Token, potentialStartPoint, teamNameToModelMap[teamName]);
                 teams[teamName].Add(t.GetComponent<TankController>());
+            }
+            else
+            {
+                //don't create player, this is a team game and they've not conformed to the naming needs (i.e. teamname:playername).
             }
 
         }
@@ -576,10 +596,16 @@ public class GameSimulation
     internal void RecordFrag(TankController victim, TankController killer)
     {
 
-        EventManager.killEvent.Invoke(killer);
+        
         EventManager.destroyedEvent.Invoke(victim);
 
         victim.Deaths++;
+
+        //don't reward points for same-team kills.
+        if (ConfigValueStore.GetBoolValue("team_mode"))
+            if (OnSameTeam(victim.Name, killer.Name))
+                return;
+
 
         if (snitch != null)
         {
@@ -590,7 +616,7 @@ public class GameSimulation
         }
 
         killer.AddKillPoints();
-
+        EventManager.killEvent.Invoke(killer);
 
 
     }

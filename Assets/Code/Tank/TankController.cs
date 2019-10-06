@@ -347,6 +347,10 @@ public class TankController : MonoBehaviour
 
     private void CalculateDamage(UnityEngine.GameObject go)
     {
+        //don't re-destroy destroyed tanks.
+        if (currentState == TankState.destroyed)
+            return;
+
         //for now, all hits subtract one health
         Health--;
 
