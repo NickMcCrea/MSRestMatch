@@ -640,10 +640,10 @@ public class GameSimulation
     {
         TankController t = FindTankObject(command.Token);
 
-        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.gameOver)
+        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.gameOver || TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.notStarted)
             return;
 
-        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.notStarted)
+        if (TrainingRoomMain.currentGameState == TrainingRoomMain.GameState.lobby)
             if (command.Type != CommandType.PlayerCreate)
                 return;
 

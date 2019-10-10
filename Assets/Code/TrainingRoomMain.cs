@@ -15,6 +15,7 @@ public class TrainingRoomMain : MonoBehaviour
     public enum GameState
     {
         notStarted,
+        lobby,
         playing,
         gameOver
     }
@@ -84,11 +85,17 @@ public class TrainingRoomMain : MonoBehaviour
 
         }
 
+        if (currentGameState == GameState.lobby)
+        {
+            if (Input.GetKeyUp(KeyCode.Space))
+                GameStart();
+
+        }
 
         if (currentGameState == GameState.notStarted)
         {
             if (Input.GetKeyUp(KeyCode.Space))
-                GameStart();
+                SetUpLobby();
         }
 
         if (currentGameState == GameState.gameOver)
@@ -265,7 +272,14 @@ public class TrainingRoomMain : MonoBehaviour
     {
         currentGameState = GameState.playing;
         gameStart = DateTime.Now;
-        GameObject.Find("MainLogo").GetComponent<Fade>().FadeOut(2f);
         Debug.Log("GAME START");
+    }
+
+    private void SetUpLobby()
+    {
+        currentGameState = GameState.lobby;
+        GameObject.Find("MainLogo").GetComponent<Fade>().FadeOut(2f);
+        Debug.Log("GAME Lobby");
+
     }
 }
