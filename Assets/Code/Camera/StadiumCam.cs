@@ -97,14 +97,13 @@ public class StadiumCam : MonoBehaviour
     {
         currentCameraMode = CameraMode.targetTrack;
         currentTarget = newTarget;
-        Debug.Log("Cam: Follow mode");
+        
 
     }
 
     public void SetCenterCircleMode()
     {
         currentCameraMode = CameraMode.centerCircle;
-        Debug.Log("Cam: Circle mode");
 
     }
 
@@ -168,7 +167,6 @@ public class StadiumCam : MonoBehaviour
     {
         currentTarget = GameObject.Find("ScoreboardCanvas");
         currentCameraMode = CameraMode.leaderboard;
-        Debug.Log("Cam: Leaderboard mode");
     }
 
     public void ResetCamera()

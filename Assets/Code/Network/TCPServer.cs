@@ -12,7 +12,6 @@ public class TCPServer
 {
     public volatile int messageCount;
     public volatile int messageOutCount;
-
     private TcpListener tcpListener;
     private Thread networkThread;
     private readonly string ipAddress;
@@ -104,19 +103,24 @@ public class TCPServer
 
                 while (client.Connected)
                 {
-                    int messageType = stream.ReadByte();
-                    int length = stream.ReadByte();
+                    int messageType;
+                    int length;
+                    string jsonString = "";
+
+                    messageType = stream.ReadByte();
+                    length = stream.ReadByte();
 
                     Byte[] bytes = new Byte[length];
 
 
                     // Read length bytes into byte arrary. This is our JSON package, if any
-                    string jsonString = "";
+                    jsonString = "";
                     if (length > 0)
                     {
                         stream.Read(bytes, 0, length);
                         jsonString = Encoding.ASCII.GetString(bytes);
                     }
+
 
                     lock (messages)
                     {
@@ -150,7 +154,7 @@ public class TCPServer
             }
         }
 
-        
+
         if (justAddedClients.Count > 0)
         {
             lock (justAddedClients)
@@ -201,7 +205,7 @@ public class TCPServer
             }
         }
 
-    
+
 
         if ((DateTime.Now - lastGameTimeUpdate).TotalSeconds > 30)
         {
@@ -212,8 +216,6 @@ public class TCPServer
         timer += Time.deltaTime;
         if (timer > 1)
         {
-            //Debug.Log("Message in count per second: " + messageCount);
-            //Debug.Log("Message out count per second: " + messageOutCount);
             messageCount = 0;
             messageOutCount = 0;
         }
@@ -228,14 +230,44 @@ public class TCPServer
         try
         {
 
+
+         
             // Get a stream object for writing. 			
             NetworkStream stream = client.GetStream();
+            
             if (stream.CanWrite)
             {
+
+                //if (message[1] != 0)
+                //{
+                //    //check the message length versus the length we're sending. 
+                //    int lengthOfIntendedPayload = (int)message[1];
+                //    int lengthOfActualPayload = message.Length - 2;
+
+                //    if (lengthOfActualPayload != lengthOfIntendedPayload)
+                //    {
+                //        Debug.Log("PAYLOAD LENGTH INCORRECTLY SET");
+                //    }
+
+                //    //let's try to generate the JSON to double check it's well formed.
+                //    try
+                //    {
+                //        string json = Encoding.ASCII.GetString(message, 2, message.Length - 2);
+                //        var state = JsonUtility.FromJson<GameObjectState>(json);
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        Debug.Log("INVALID JSON BEING SENT");
+                //    }
+                //}
+
+                //Debug.Log(Thread.CurrentThread.ManagedThreadId);
                 stream.Write(message, 0, message.Length);
                 stream.Flush();
+                
                 messageOutCount++;
             }
+
         }
         catch (SocketException socketException)
         {
@@ -249,7 +281,7 @@ public class TCPServer
         }
         catch (InvalidOperationException invalidException)
         {
-            Debug.Log("Invaid operation. Closing client " + invalidException.Message.ToString());
+            Debug.Log("Invalid operation. Closing client " + invalidException.Message.ToString());
             RemoveClient(client);
         }
     }
@@ -340,7 +372,7 @@ public class TCPServer
         {
             return client.Client.RemoteEndPoint.ToString();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Debug.Log("Client cannot be found");
             return "";
@@ -605,11 +637,18 @@ public static class MessageFactory
     public static byte[] CreateObjectUpdateMessage(string json)
     {
         byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(json);
+
+        if (clientMessageAsByteArray.Length > 200)
+            Debug.Log("Long Object Update Message Received: Length:  " + clientMessageAsByteArray.Length);
+
         return AddTypeAndLengthToArray(clientMessageAsByteArray, (byte)NetworkMessageType.objectUpdate);
     }
 
     public static byte[] AddTypeAndLengthToArray(byte[] bArray, byte type)
     {
+        if (bArray.Length > 200)
+            Debug.Log("Long Message Received: Type  " + type + " Length: " + bArray.Length);
+
         byte[] newArray = new byte[bArray.Length + 2];
         bArray.CopyTo(newArray, 2);
         newArray[0] = type;
